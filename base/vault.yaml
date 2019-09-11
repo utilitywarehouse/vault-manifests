@@ -1,0 +1,102 @@
+# This SA is used by vault to talk to the kube api and verify application's SAs
+# trying to get secrets
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-authenticator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  labels:
+    app: vault
+  annotations:
+    fluentbit.io/exclude: "true"
+spec:
+  clusterIP: None
+  selector:
+    app: vault
+  ports:
+    - port: 8200
+      name: public-api
+    - port: 8201
+      name: members-internal-api
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+spec:
+  serviceName: vault
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vault
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
+      volumes:
+        - name: generic-config
+          configMap:
+            name: vault
+        - name: node-config
+          emptyDir: {}
+        - name: tls
+          secret:
+            secretName: vault-tls
+            defaultMode: 0400
+      initContainers:
+        - name: envsubst
+          image: alpine
+          command:
+            - "sh"
+            - "-c"
+            - 'sed -e ''s/${HOSTNAME}/''"${HOSTNAME}"''/'' /etc/vault-generic/config.hcl > /etc/vault/config.hcl'
+          volumeMounts:
+            - name: generic-config
+              mountPath: /etc/vault-generic
+            - name: node-config
+              mountPath: /etc/vault
+      containers:
+        - name: vault
+          image: vault:1.2.0
+          command:
+            - vault
+            - server
+            - -config=/etc/vault/config.hcl
+          ports:
+            - containerPort: 8200
+            - containerPort: 8201
+          volumeMounts:
+            - name: generic-config
+              mountPath: /etc/vault-generic
+            - name: node-config
+              mountPath: /etc/vault
+            - name: storage
+              mountPath: /vault/storage
+            - name: tls
+              mountPath: /etc/tls
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

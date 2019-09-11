@@ -11,8 +11,6 @@ metadata:
   name: vault
   labels:
     app: vault
-  annotations:
-    fluentbit.io/exclude: "true"
 spec:
   clusterIP: None
   selector:

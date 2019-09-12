@@ -10,6 +10,13 @@ spec:
   template:
     spec:
       containers:
+        - name: unsealer
+          env:
+            - name: UNSEAL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vault-unseal
+                  key: unseal-key
         - name: vault
           env:
             - name: AWS_ACCESS_KEY_ID
@@ -17,7 +24,7 @@ spec:
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: vault-secrets
+                  name: vault-aws
                   key: aws-secret-access-key
   volumeClaimTemplates:
     - metadata:

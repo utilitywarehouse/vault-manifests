@@ -48,47 +48,109 @@ spec:
                         - vault
                 topologyKey: failure-domain.beta.kubernetes.io/zone
               weight: 100
-      volumes:
-        - name: generic-config
-          configMap:
-            name: vault
-        - name: node-config
-          emptyDir: {}
-        - name: tls
-          secret:
-            secretName: vault-tls
-            defaultMode: 0400
       initContainers:
-        - name: envsubst
+        # Install ca cert as a root CA
+        - name: ca
           image: alpine
           command:
-            - "sh"
-            - "-c"
-            - 'sed -e ''s/${HOSTNAME}/''"${HOSTNAME}"''/'' /etc/vault-generic/config.hcl > /etc/vault/config.hcl'
+            - sh
+            - -c
+            - |
+              set -e
+              apk add --update ca-certificates
+              cp /etc/tls/ca.crt /usr/local/share/ca-certificates/vault-ca.crt
+              update-ca-certificates
+              cp /etc/ssl/certs/* /ssl-certs
           volumeMounts:
-            - name: generic-config
-              mountPath: /etc/vault-generic
-            - name: node-config
-              mountPath: /etc/vault
+            - name: tls
+              mountPath: /etc/tls
+            - name: ssl-certs
+              mountPath: /ssl-certs
+        # Write config to file
+        - name: config
+          image: alpine
+          command:
+            - sh
+            - -c
+            - echo "$VAULT_CONFIG" > /vault/config/config.hcl
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: VAULT_CONFIG
+              value: |
+                listener "tcp" {
+                  address         = "0.0.0.0:8200"
+                  cluster_address = "0.0.0.0:8201"
+                  tls_key_file    = "/etc/tls/tls.key"
+                  tls_cert_file   = "/etc/tls/tls.crt"
+                }
+
+                storage "raft" {
+                  path    = "/vault/storage"
+                  node_id = "$(POD_NAME)"
+                }
+
+                api_addr      = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8200"
+                cluster_addr  = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8201"
+                disable_mlock = true
+          volumeMounts:
+            - name: config
+              mountPath: /vault/config
       containers:
+        - name: unsealer
+          image: alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              if [ -n "${UNSEAL_KEY}" ]; then
+                apk add curl jq
+                sleep 7
+                curl --cacert /etc/tls/ca.crt https://127.0.0.1:8200/v1/sys/unseal -XPUT -d"{\"key\":\"${UNSEAL_KEY}\"}" \
+                | jq .sealed \
+                | grep -q "^false$"
+              fi
+              while true; do sleep 86400; done
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
         - name: vault
           image: vault:1.2.0
           command:
+            - /usr/bin/dumb-init
+            - --
             - vault
             - server
-            - -config=/etc/vault/config.hcl
+            - -config=/vault/config
           ports:
             - containerPort: 8200
             - containerPort: 8201
           volumeMounts:
-            - name: generic-config
-              mountPath: /etc/vault-generic
-            - name: node-config
-              mountPath: /etc/vault
+            - name: config
+              mountPath: /vault/config
             - name: storage
               mountPath: /vault/storage
             - name: tls
               mountPath: /etc/tls
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+      volumes:
+        - name: tls
+          secret:
+            secretName: vault-tls
+            defaultMode: 0400
+        - name: config
+          emptyDir: {}
+        - name: ssl-certs
+          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: storage

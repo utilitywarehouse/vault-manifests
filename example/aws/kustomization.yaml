@@ -6,18 +6,19 @@ bases:
 patchesStrategicMerge:
   - vault-patch.yaml
 secretGenerator:
-  - name: vault-secrets
+  - name: vault-aws
     type: Opaque
     files:
       - aws-secret-access-key=secrets/vault-aws-secret-access-key
+  - name: vault-unseal
+    type: Opaque
+    files:
+      - unseal-key=secrets/vault-unseal-key
   - name: vault-tls
     type: kubernetes.io/tls
     files:
       - tls.crt=secrets/vault-tls.crt
       - tls.key=secrets/vault-tls.key
-configMapGenerator:
-  - name: vault
-    files:
-      - config.hcl=resources/vault-config.hcl
+      - ca.crt=secrets/vault-ca.crt
 resources:
   - vault-cluster-role-binding.yaml

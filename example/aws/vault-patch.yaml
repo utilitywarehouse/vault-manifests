@@ -26,13 +26,3 @@ spec:
                 secretKeyRef:
                   name: vault-aws
                   key: aws-secret-access-key
-  volumeClaimTemplates:
-    - metadata:
-        name: storage
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: ebs-gp2

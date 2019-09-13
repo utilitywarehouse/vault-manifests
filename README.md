@@ -15,9 +15,11 @@ bases:
 
 ## Example
 
-For a full example of a Kustomize overlay please refer to the provider specific example:
+Build the example [example](example/):
 
-- [aws](example/aws)
+```
+kustomize build example/
+```
 
 ## Requires
 

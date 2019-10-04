@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
   - ../base
-  # github.com/utilitywarehouse/vault-manifests//base?ref=1.2.0-1
+  # github.com/utilitywarehouse/vault-manifests//base?ref=1.2.3-1
 patchesStrategicMerge:
   - vault-patch.yaml
 secretGenerator:
@@ -10,6 +10,10 @@ secretGenerator:
     type: Opaque
     files:
       - unseal-key=secrets/vault-unseal-key
+  - name: vault-token
+    type: Opaque
+    files:
+      - token=secrets/vault-token
   - name: vault-tls
     type: kubernetes.io/tls
     files:

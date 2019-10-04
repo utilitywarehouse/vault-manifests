@@ -10,7 +10,7 @@ Reference it in your `kustomization.yaml`:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
-  - github.com/utilitywarehouse/vault-manifests//base?ref=1.2.0-1
+  - github.com/utilitywarehouse/vault-manifests//base?ref=1.2.3-1
 ```
 
 ## Example

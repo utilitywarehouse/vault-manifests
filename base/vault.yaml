@@ -35,6 +35,10 @@ spec:
     metadata:
       labels:
         app: vault
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: '8080'
     spec:
       affinity:
         podAntiAffinity:
@@ -66,8 +70,8 @@ spec:
               mountPath: /etc/tls
             - name: ssl-certs
               mountPath: /ssl-certs
-        # Write config to file
-        - name: config
+        # Write vautl config to file
+        - name: vault-config
           image: alpine
           command:
             - sh
@@ -96,12 +100,45 @@ spec:
                   node_id = "$(POD_NAME)"
                 }
 
+                telemetry {
+                  prometheus_retention_time = "90s",
+                  disable_hostname = true
+                }
+
                 api_addr      = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8200"
                 cluster_addr  = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8201"
                 disable_mlock = true
           volumeMounts:
-            - name: config
+            - name: vault-config
               mountPath: /vault/config
+        # Write nginx config to file
+        - name: nginx-config
+          image: alpine
+          command:
+            - sh
+            - -c
+            - echo "$NGINX_CONFIG" > /etc/nginx/conf.d/default.conf
+          env:
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-token
+                  key: token
+            - name: NGINX_CONFIG
+              value: |
+                  server {
+                      listen       8080;
+                      server_name  localhost;
+
+                      location /__/metrics {
+                          proxy_pass https://127.0.0.1:8200/v1/sys/metrics?format=prometheus;
+                          proxy_set_header X-Vault-Token $(VAULT_TOKEN);
+                          proxy_ssl_verify off;
+                      }
+                  }
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
       containers:
         - name: unsealer
           image: alpine
@@ -123,7 +160,7 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: vault
-          image: vault:1.2.0
+          image: vault:1.2.3
           command:
             - /usr/bin/dumb-init
             - --
@@ -134,7 +171,7 @@ spec:
             - containerPort: 8200
             - containerPort: 8201
           volumeMounts:
-            - name: config
+            - name: vault-config
               mountPath: /vault/config
             - name: storage
               mountPath: /vault/storage
@@ -142,12 +179,28 @@ spec:
               mountPath: /etc/tls
             - name: ssl-certs
               mountPath: /etc/ssl/certs
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 100
+            allowPrivilegeEscalation: false
+        - name: metrics
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+      securityContext:
+        fsGroup: 1000
       volumes:
         - name: tls
           secret:
             secretName: vault-tls
             defaultMode: 0400
-        - name: config
+        - name: vault-config
+          emptyDir: {}
+        - name: nginx-config
           emptyDir: {}
         - name: ssl-certs
           emptyDir: {}

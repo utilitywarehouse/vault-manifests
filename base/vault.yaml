@@ -70,8 +70,8 @@ spec:
               mountPath: /etc/tls
             - name: ssl-certs
               mountPath: /ssl-certs
-        # Write config to file
-        - name: config
+        # Write vautl config to file
+        - name: vault-config
           image: alpine
           command:
             - sh
@@ -109,8 +109,9 @@ spec:
                 cluster_addr  = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8201"
                 disable_mlock = true
           volumeMounts:
-            - name: config
+            - name: vault-config
               mountPath: /vault/config
+        # Write nginx config to file
         - name: nginx-config
           image: alpine
           command:
@@ -170,7 +171,7 @@ spec:
             - containerPort: 8200
             - containerPort: 8201
           volumeMounts:
-            - name: config
+            - name: vault-config
               mountPath: /vault/config
             - name: storage
               mountPath: /vault/storage
@@ -197,7 +198,7 @@ spec:
           secret:
             secretName: vault-tls
             defaultMode: 0400
-        - name: config
+        - name: vault-config
           emptyDir: {}
         - name: nginx-config
           emptyDir: {}

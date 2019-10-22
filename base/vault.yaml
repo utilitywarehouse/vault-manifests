@@ -148,14 +148,43 @@ spec:
             - |
               set -e
 
-              if [ -n "${UNSEAL_KEY}" ]; then
-                apk add curl jq
-                sleep 7
-                curl --cacert /etc/tls/ca.crt https://127.0.0.1:8200/v1/sys/unseal -XPUT -d"{\"key\":\"${UNSEAL_KEY}\"}" \
-                | jq .sealed \
-                | grep -q "^false$"
+              vault_addr="${VAULT_ADDR:-"https://127.0.0.1:8200"}";
+
+              # Sleep if no unseal key provided
+              if [ -z "${UNSEAL_KEY}" ]; then
+                echo "No unseal key provided, going to sleep";
+                while true; do sleep 86400; done
               fi
+
+              apk -q add curl jq;
+
+              # Wait for vault api and sleep if not initialized
+              until curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init"; do
+                echo 'vault not ready, sleeping for 3 seconds';
+                sleep 3;
+              done;
+              initialized=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
+              if [ "${initialized}" = "false" ];then
+                echo "vault is not initialized, going to sleep";
+                while true; do sleep 86400; done
+              fi
+
+              # Unseal and sleep
+              curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
+                -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
+                | jq .sealed \
+                | grep -q "^false$";
+              echo "vault unsealed, going to sleep";
               while true; do sleep 86400; done
+          env:
+            - name: VAULT_CACERT
+              value: "/etc/tls/ca.crt"
+            - name: UNSEAL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vault-unseal
+                  key: unseal-key
+                  optional: true
           volumeMounts:
             - name: tls
               mountPath: /etc/tls

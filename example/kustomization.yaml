@@ -6,14 +6,6 @@ bases:
 patchesStrategicMerge:
   - vault-patch.yaml
 secretGenerator:
-  - name: vault-unseal
-    type: Opaque
-    files:
-      - unseal-key=secrets/vault-unseal-key
-  - name: vault-token
-    type: Opaque
-    files:
-      - token=secrets/vault-token
   - name: vault-tls
     type: kubernetes.io/tls
     files:
@@ -22,3 +14,4 @@ secretGenerator:
       - ca.crt=secrets/vault-ca.crt
 resources:
   - vault-cluster-role-binding.yaml
+  - vault-namespaced-role-binding.yaml

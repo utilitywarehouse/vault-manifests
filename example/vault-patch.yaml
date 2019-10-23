@@ -6,14 +6,3 @@ metadata:
   # your logging pipeline
   annotations:
     fluentbit.io/exclude: "true"
-spec:
-  template:
-    spec:
-      containers:
-        - name: unsealer
-          env:
-            - name: UNSEAL_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: vault-unseal
-                  key: unseal-key

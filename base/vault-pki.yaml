@@ -33,13 +33,6 @@ spec:
                 #!/usr/bin/env bash
 
                 # Validation and defaults
-                : ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
-                : ${VAULT_CLIENT_NAMESPACES:?"Need to set VAULT_CLIENT_NAMESPACES"}
-                kubectl_version="${KUBECTL_VERSION:-"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"}"
-                secret_name="${VAULT_SECRET_NAME:-"vault-tls"}"
-                vault_name="${VAULT_NAME:-"vault"}"
-                replicas="${VAULT_REPLICAS:-"3"}"
-
                 if ! which curl > /dev/null; then
                   echo "curl needs to be installed"
                   exit 1
@@ -49,6 +42,13 @@ spec:
                   echo "jq needs to be installed"
                   exit 1
                 fi
+
+                : ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
+                : ${VAULT_CLIENT_NAMESPACES:?"Need to set VAULT_CLIENT_NAMESPACES"}
+                kubectl_version="${KUBECTL_VERSION:-"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"}"
+                secret_name="${VAULT_SECRET_NAME:-"vault-tls"}"
+                vault_name="${VAULT_NAME:-"vault"}"
+                replicas="${VAULT_REPLICAS:-"3"}"
 
                 # Setup
                 curl -sLO "https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/linux/amd64/kubectl"
@@ -71,6 +71,17 @@ spec:
 
                 # Main loop
                 while true; do
+                  # Sleep if certificate is not expiring soon
+                  if [[ -f "${output_dir}"/ca.crt ]]; then
+                    now_seconds=$(date +%s)
+                    cert_expiration=$(cfssl certinfo -cert "${output_dir}"/ca.crt | jq -r '.not_after')
+                    expiration_seconds=$(date -d "${cert_expiration}" +%s)
+                    validity=$((${expiration_seconds} - ${now_seconds}))
+                    if [[ ${validity} > 7200 ]]; then # 2h
+                      sleep 1500 # 25 min
+                      continue
+                    fi
+                  fi
                   echo "Rotating PKI"
                   # CA files
                   ca_config='{
@@ -143,6 +154,6 @@ spec:
                       --from-file "${output_dir}"/tls.crt \
                       --from-file "${output_dir}"/tls.key
                   done
-                  echo "Done, sleeping for 1 day"
-                  sleep 86400
+
+                  echo "Rotated successfully on $(date --rfc-3339='seconds')"
                 done

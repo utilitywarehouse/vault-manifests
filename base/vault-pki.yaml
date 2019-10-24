@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-pki
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-pki
+spec:
+  selector:
+    matchLabels:
+      app: vault-pki
+  template:
+    metadata:
+      labels:
+        app: vault-pki
+    spec:
+      serviceAccountName: vault-pki
+      containers:
+        - name: pki-manager
+          image: everpeace/curl-jq
+          command:
+            - "sh"
+            - "-c"
+            - >
+              echo "${GENERATE_CERTS}" > generate_certs;
+              chmod +x ./generate_certs;
+              ./generate_certs;
+          env:
+            - name: GENERATE_CERTS
+              value: |
+                #!/usr/bin/env bash
+
+                # Validation and defaults
+                : ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
+                : ${VAULT_CLIENT_NAMESPACES:?"Need to set VAULT_CLIENT_NAMESPACES"}
+                kubectl_version="${KUBECTL_VERSION:-"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"}"
+                secret_name="${VAULT_SECRET_NAME:-"vault-tls"}"
+                vault_name="${VAULT_NAME:-"vault"}"
+                replicas="${VAULT_REPLICAS:-"3"}"
+
+                if ! which curl > /dev/null; then
+                  echo "curl needs to be installed"
+                  exit 1
+                fi
+
+                if ! which jq > /dev/null; then
+                  echo "jq needs to be installed"
+                  exit 1
+                fi
+
+                # Setup
+                curl -sLO "https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/linux/amd64/kubectl"
+                chmod +x ./kubectl
+                mv ./kubectl /usr/local/bin
+
+                curl -sLO https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+                mv cfssl_linux-amd64 cfssl
+                chmod +x ./cfssl
+                mv ./cfssl /usr/local/bin
+
+                curl -sLO https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+                mv cfssljson_linux-amd64 cfssljson
+                chmod +x ./cfssljson
+                mv ./cfssljson /usr/local/bin
+
+                output_dir="./pki"
+                rm -rf "${output_dir}"
+                mkdir "${output_dir}"
+
+                # Main loop
+                while true; do
+                  echo "Rotating PKI"
+                  # CA files
+                  ca_config='{
+                    "CN": "'"${VAULT_NAMESPACE}"' CA",
+                    "key": {
+                      "algo": "ecdsa",
+                      "size": 521
+                    },
+                    "ca": {
+                      "expiry": "25h"
+                    }
+                  }'
+
+                  echo "${ca_config}" > "${output_dir}"/ca-config.json
+
+                  cfssl gencert \
+                    -initca "${output_dir}"/ca-config.json | cfssljson -bare "${output_dir}"/ca
+
+                  mv "${output_dir}"/ca.pem "${output_dir}"/ca-cert.pem
+                  rm "${output_dir}"/ca.csr
+
+                  # Vault server files
+                  server_config='{
+                    "CN": "'"${vault_name}"'.'"${VAULT_NAMESPACE}"'",
+                    "key": {
+                      "algo": "ecdsa",
+                      "size": 521
+                    }
+                  }'
+
+                  hosts='"localhost", "127.0.0.1", "'"${vault_name}"'", "'"${vault_name}.${VAULT_NAMESPACE}"'"'
+                  for i in $(seq 0 $(($replicas - 1))) ; do
+                    hosts=''"${hosts}"', "'"${vault_name}-${i}.${vault_name}"'", "'"${vault_name}-${i}.${vault_name}.${VAULT_NAMESPACE}"'"'
+                  done
+                  server_config=$(echo "${server_config}" | jq '.hosts = ['"${hosts}"']')
+
+                  echo "${server_config}" > "${output_dir}"/server-config.json
+
+                  cfssl gencert \
+                    -ca "${output_dir}"/ca-cert.pem \
+                    -ca-key "${output_dir}"/ca-key.pem \
+                    "${output_dir}"/server-config.json | cfssljson -bare "${output_dir}"/server
+
+                  mv "${output_dir}"/server.pem "${output_dir}"/server-cert.pem
+                  rm "${output_dir}"/server.csr
+
+                  # Rename files and delete CA key
+                  mv "${output_dir}"/ca-cert.pem "${output_dir}"/ca.crt
+                  rm "${output_dir}"/ca-key.pem
+
+                  mv "${output_dir}"/server-cert.pem "${output_dir}"/tls.crt
+                  mv "${output_dir}"/server-key.pem "${output_dir}"/tls.key
+
+                  # Update secrets
+                  echo "Updating secret in ${VAULT_NAMESPACE}"
+                  kubectl -n "${VAULT_NAMESPACE}" delete secret "${secret_name}"
+                  kubectl -n "${VAULT_NAMESPACE}" create secret \
+                    generic "${secret_name}" \
+                    --from-file "${output_dir}"/ca.crt \
+                    --from-file "${output_dir}"/tls.crt \
+                    --from-file "${output_dir}"/tls.key
+
+                  for n in ${VAULT_CLIENT_NAMESPACES}; do
+                    echo "Updating secret in ${n}"
+
+                    kubectl -n "${n}" delete secret "${secret_name}"
+                    kubectl -n "${n}" create secret \
+                      generic "${secret_name}" \
+                      --from-file "${output_dir}"/ca.crt \
+                      --from-file "${output_dir}"/tls.crt \
+                      --from-file "${output_dir}"/tls.key
+                  done
+                  echo "Done, sleeping for 1 day"
+                  sleep 86400
+                done

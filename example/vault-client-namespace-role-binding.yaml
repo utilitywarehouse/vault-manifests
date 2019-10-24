@@ -1,4 +1,4 @@
-# Used by vault initializer to update secrets
+# Used by vault pki to provide CA to client namespaces
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -9,10 +9,6 @@ roleRef:
   name: admin
 subjects:
   - kind: ServiceAccount
-    name: vault
-    # Placeholder, patch with the vault namespace value
-    namespace: example
-  - kind: ServiceAccount
     name: vault-pki
-    # Placeholder, patch with the vault namespace value
+    # Placeholder, patch with the client namespace value
     namespace: example

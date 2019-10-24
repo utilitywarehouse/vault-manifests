@@ -5,13 +5,7 @@ bases:
   # github.com/utilitywarehouse/vault-manifests//base?ref=1.2.3-1
 patchesStrategicMerge:
   - vault-patch.yaml
-secretGenerator:
-  - name: vault-tls
-    type: kubernetes.io/tls
-    files:
-      - tls.crt=secrets/vault-tls.crt
-      - tls.key=secrets/vault-tls.key
-      - ca.crt=secrets/vault-ca.crt
+  - vault-pki-patch.yaml
 resources:
   - vault-cluster-role-binding.yaml
   - vault-namespaced-role-binding.yaml

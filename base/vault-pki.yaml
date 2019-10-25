@@ -137,22 +137,18 @@ spec:
 
                   # Update secrets
                   echo "Updating secret in ${VAULT_NAMESPACE}"
-                  kubectl -n "${VAULT_NAMESPACE}" delete secret "${secret_name}"
                   kubectl -n "${VAULT_NAMESPACE}" create secret \
                     generic "${secret_name}" \
                     --from-file "${output_dir}"/ca.crt \
                     --from-file "${output_dir}"/tls.crt \
-                    --from-file "${output_dir}"/tls.key
+                    --from-file "${output_dir}"/tls.key \
+                    --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" apply -f -
 
                   for n in ${VAULT_CLIENT_NAMESPACES}; do
-                    echo "Updating secret in ${n}"
-
-                    kubectl -n "${n}" delete secret "${secret_name}"
-                    kubectl -n "${n}" create secret \
-                      generic "${secret_name}" \
+                    echo "Updating configmap in ${n}"
+                    kubectl -n "${n}" create configmap "${secret_name}" \
                       --from-file "${output_dir}"/ca.crt \
-                      --from-file "${output_dir}"/tls.crt \
-                      --from-file "${output_dir}"/tls.key
+                      --dry-run -o yaml | kubectl -n "${n}" apply -f -
                   done
 
                   echo "Rotated successfully on $(date --rfc-3339='seconds')"

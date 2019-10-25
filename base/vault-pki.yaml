@@ -72,9 +72,9 @@ spec:
                 # Main loop
                 while true; do
                   # Sleep if certificate is not expiring soon
-                  if [[ -f "${output_dir}"/ca.crt ]]; then
+                  if [[ -f /etc/tls/ca.crt ]]; then
                     now_seconds=$(date +%s)
-                    cert_expiration=$(cfssl certinfo -cert "${output_dir}"/ca.crt | jq -r '.not_after')
+                    cert_expiration=$(cfssl certinfo -cert /etc/tls/ca.crt | jq -r '.not_after')
                     expiration_seconds=$(date -d "${cert_expiration}" +%s)
                     validity=$((${expiration_seconds} - ${now_seconds}))
                     if [[ ${validity} > 7200 ]]; then # 2h
@@ -156,4 +156,13 @@ spec:
                   done
 
                   echo "Rotated successfully on $(date --rfc-3339='seconds')"
+                  sleep 1500 # 25 min
                 done
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
+      volumes:
+        - name: tls
+          secret:
+            secretName: vault-tls
+            optional: true

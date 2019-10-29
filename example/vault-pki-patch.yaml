@@ -10,5 +10,5 @@ spec:
           env:
             - name: VAULT_NAMESPACE
               value: "sys-vault"
-            - name: VAULT_CLIENT_NAMESPACES
-              value: "labs"
+            - name: VAULT_CLIENT_NAMESPACES # space separated list
+              value: "labs sys-log sys-mon"

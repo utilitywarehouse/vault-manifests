@@ -7,6 +7,6 @@ patchesStrategicMerge:
   - vault-patch.yaml
   - vault-pki-patch.yaml
 resources:
-  - vault-client-namespace-role-binding.yaml
-  - vault-cluster-role-binding.yaml
-  - vault-namespaced-role-binding.yaml
+  - vault-client-namespace-rbac.yaml
+  - vault-clusterwide-rbac.yaml
+  - vault-namespaced-rbac.yaml

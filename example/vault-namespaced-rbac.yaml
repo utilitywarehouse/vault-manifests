@@ -1,12 +1,21 @@
-# Used by vault initializer to update secrets
+# Used by vault initializer and vault-pki to update secrets
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: Role
 metadata:
-  name: vault-namespace-admin
+  name: vault-secret-applier
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "update", "patch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-secret-applier
 roleRef:
+  kind: Role
+  name: vault-secret-applier
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: admin
 subjects:
   - kind: ServiceAccount
     name: vault

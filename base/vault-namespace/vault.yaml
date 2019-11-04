@@ -45,6 +45,7 @@ spec:
         prometheus.io/port: '8080'
     spec:
       serviceAccountName: vault
+      shareProcessNamespace: true
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -303,6 +304,25 @@ spec:
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
+        - name: reloader
+          image: alpine
+          securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo '#!/bin/sh
+              if [ "$#" -eq 3 ] && [ "$3" == "..data" ]; then
+                  echo "[" $(date -uIseconds) "] config seems to have changed, reloading ..."
+                  vault_pid=$(pgrep vault)
+                  kill -HUP "${vault_pid}"
+              fi' > /reload && chmod +x /reload && inotifyd /reload /etc/tls:y
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
       securityContext:
         fsGroup: 1000
       volumes:

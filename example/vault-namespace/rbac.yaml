@@ -1,14 +1,17 @@
-# Used by vault to talk to kube api and verify application's SAs trying to login
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
 metadata:
-  name: token-authentication
+  name: vault-secret-applier
 roleRef:
+  kind: Role
+  name: vault-secret-applier
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
 subjects:
   - kind: ServiceAccount
     name: vault
+    # Placeholder, patch with the vault namespace value
+    namespace: example
+  - kind: ServiceAccount
+    name: vault-pki
     # Placeholder, patch with the vault namespace value
     namespace: example

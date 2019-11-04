@@ -1,0 +1,37 @@
+# Used by vault to get SYS_PTRACE capability
+# ptrace is neeeded by the config reloader sidecar to send SIGHUP to vault
+# https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: vault
+spec:
+  allowedCapabilities:
+  - SYS_PTRACE
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  # Allow same volumes as the default policy
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+    - vault

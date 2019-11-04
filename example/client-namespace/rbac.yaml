@@ -1,13 +1,3 @@
-# Used by vault pki to provide CA to client namespaces
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: vault-configmap-applier
-rules:
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["create", "update", "patch"]
----
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

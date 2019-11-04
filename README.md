@@ -18,21 +18,40 @@ This repository provides a Kustomize base for Hashicorp's Vault.
 
 ## Usage
 
-Reference it in your `kustomization.yaml`:
+Reference the bases in your `kustomization.yaml`:
 
+In vault's namespace:
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
-  - github.com/utilitywarehouse/vault-manifests//base?ref=1.2.3-1
+  - github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.2.3-1
 ```
 
-## Example
+In client's namespaces:
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - github.com/utilitywarehouse/vault-manifests//base/client-namespace?ref=1.2.3-1
+```
 
-Build the example [example](example/):
+Somewhere with permission to apply cluster-wide resources
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - github.com/utilitywarehouse/vault-manifests//base/cluster-wide?ref=1.2.3-1
+```
+
+## Examples
+
+Build the examples [example](example/*):
 
 ```
-kustomize build example/
+kustomize build example/vault-namespace
+kustomize build example/client-namespace
+kustomize build example/cluster-wide
 ```
 
 ## Requires

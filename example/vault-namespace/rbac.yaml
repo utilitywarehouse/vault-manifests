@@ -1,13 +1,3 @@
-# Used by vault initializer and vault-pki to update secrets
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: vault-secret-applier
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "create", "update", "patch"]
----
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

@@ -217,7 +217,8 @@ spec:
               done
 
               # Restart pods to enable metrics
-              kubectl delete pod -l app="${vault_name}"
+              kubectl delete pod -l app="${vault_name}",statefulset.kubernetes.io/pod-name!="${vault_name}"-0
+              kubectl delete pod "${vault_name}-0"
           env:
             - name: VAULT_CACERT
               value: "/etc/tls/ca.crt"

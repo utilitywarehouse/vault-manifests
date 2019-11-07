@@ -19,7 +19,7 @@ spec:
       serviceAccountName: vault-pki
       containers:
         - name: pki-manager
-          image: everpeace/curl-jq
+          image: debian:stable-slim
           command:
             - "sh"
             - "-c"
@@ -32,16 +32,9 @@ spec:
               value: |
                 #!/usr/bin/env bash
 
-                # Validation and defaults
-                if ! which curl > /dev/null; then
-                  echo "curl needs to be installed"
-                  exit 1
-                fi
-
-                if ! which jq > /dev/null; then
-                  echo "jq needs to be installed"
-                  exit 1
-                fi
+                # Validation defaults and setup
+                apt-get update
+                apt-get install -y curl jq
 
                 : ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
                 : ${VAULT_CLIENT_NAMESPACES:?"Need to set VAULT_CLIENT_NAMESPACES"}
@@ -51,18 +44,15 @@ spec:
                 vault_name="${VAULT_NAME:-"vault"}"
                 replicas="${VAULT_REPLICAS:-"3"}"
 
-                # Setup
                 curl -sLO "https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/linux/amd64/kubectl"
                 chmod +x ./kubectl
                 mv ./kubectl /usr/local/bin
 
-                curl -sLO "https://github.com/cloudflare/cfssl/releases/download/${cfssl_version}/cfssl_${cfssl_version:1}_linux_amd64"
-                mv cfssl_linux-amd64 cfssl
+                curl -sL "https://github.com/cloudflare/cfssl/releases/download/${cfssl_version}/cfssl_${cfssl_version:1}_linux_amd64" -o cfssl
                 chmod +x ./cfssl
                 mv ./cfssl /usr/local/bin
 
-                curl -sLO "https://github.com/cloudflare/cfssl/releases/download/${cfssl_version}/cfssljson_${cfssl_version:1}_linux_amd64"
-                mv cfssljson_linux-amd64 cfssljson
+                curl -sL "https://github.com/cloudflare/cfssl/releases/download/${cfssl_version}/cfssljson_${cfssl_version:1}_linux_amd64" -o cfssljson
                 chmod +x ./cfssljson
                 mv ./cfssljson /usr/local/bin
 

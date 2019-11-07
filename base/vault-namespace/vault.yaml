@@ -125,8 +125,7 @@ spec:
             - -c
             - |
               VAULT_TOKEN="${VAULT_TOKEN:-"000000000000000"}";
-              echo "$NGINX_CONFIG" > temp;
-              sed 's/$(VAULT_TOKEN)/'"${VAULT_TOKEN}"'/g' temp > /etc/nginx/conf.d/default.conf;
+              echo "${NGINX_CONFIG}" | sed 's/%VAULT_TOKEN%/'"${VAULT_TOKEN}"'/g' > /etc/nginx/conf.d/default.conf;
           env:
             - name: VAULT_TOKEN
               valueFrom:
@@ -142,7 +141,7 @@ spec:
 
                       location /__/metrics {
                           proxy_pass https://127.0.0.1:8200/v1/sys/metrics?format=prometheus;
-                          proxy_set_header X-Vault-Token $(VAULT_TOKEN);
+                          proxy_set_header X-Vault-Token %VAULT_TOKEN%;
                           proxy_ssl_verify off;
                       }
                   }

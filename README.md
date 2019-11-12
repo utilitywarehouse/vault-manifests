@@ -63,4 +63,4 @@ go get -u sigs.k8s.io/kustomize
 ```
 
 ## Step by step guide of a complete system
-This Vault setup is intended to be used with other elements to provide a easy way for applications to acces cloud resources. [Here](complete-step-by-step-guide.md) is a complete step by step guide to easily provide a kubernetes application access to an aws bucket.
+This Vault setup is intended to be used with other elements to provide an easy way for applications to access cloud resources. [Here](complete-step-by-step-guide.md) is a complete step by step guide to easily provide a kubernetes application access to an aws bucket.

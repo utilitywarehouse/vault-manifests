@@ -55,7 +55,7 @@ We need to create some resources on kube and AWS for Vault to use, and then conf
 * Setup prometheus alerts like this [Vault](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-prom/resources/prometheus-alerts.yaml) group
 
 ## Configuring a new app to get aws credentials from Vault
-* Create a role with the permission required and grant AssumeRole permission to Vault's credential provider user ([example](https://github.com/utilitywarehouse/terraform/blob/naming/aws/dev/sys-aws-probe/main.tf))
+* Create a role with the permission required and grant AssumeRole permission to Vault's credential provider user ([example](https://github.com/utilitywarehouse/terraform/blob/master/aws/dev/sys-aws-probe/main.tf))
 * In your terraform vault configuration repository, link your applications's SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-aws/kube-aws-credentials/main.tf))
 * If not yet present, add the application's namespace to the `VAULT_CLIENT_NAMESPACES` list in Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki.yaml))
 * Configure the app to use our [Vault sidecar](https://github.com/utilitywarehouse/vault-kube-aws-credentials) to get credentials for the role ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/labs/aws-probe.yaml))

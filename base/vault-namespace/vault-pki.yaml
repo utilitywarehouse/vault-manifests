@@ -68,7 +68,7 @@ spec:
                     cert_expiration=$(cfssl certinfo -cert /etc/tls/ca.crt | jq -r '.not_after')
                     expiration_seconds=$(date -d "${cert_expiration}" +%s)
                     validity=$((${expiration_seconds} - ${now_seconds}))
-                    if [[ ${validity} > 7200 ]]; then # 2h
+                    if [[ ${validity} -gt 7200 ]]; then # 2h
                       sleep 1500 # 25 min
                       continue
                     fi

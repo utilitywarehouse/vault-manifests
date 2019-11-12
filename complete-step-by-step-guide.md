@@ -50,7 +50,7 @@ We need to create some resources on kube and AWS for Vault to use, and then conf
 * Configure the [aws secret backend](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-aws/backends/aws-secrets-engine.tf)
 
 ### Deploy terraform applier
-* Setup [terraform applier](https://github.com/utilitywarehouse/terraform-applier/tree/master/manifests/example) in vault's namespace, and configure it to sync with your vault terraform configuration repo
+* Setup [terraform applier](https://github.com/utilitywarehouse/terraform-applier/tree/master/manifests/example) in vault's namespace, and configure it to sync with your vault terraform configuration repo ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/terraform-applier-patch.yaml))
 ### Setup alerts
 * Setup prometheus alerts like this [Vault](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-prom/resources/prometheus-alerts.yaml) group
 

@@ -28,6 +28,10 @@ spec:
               chmod +x ./generate_certs;
               ./generate_certs;
           env:
+            - name: VAULT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: GENERATE_CERTS
               value: |
                 #!/usr/bin/env bash

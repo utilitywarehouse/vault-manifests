@@ -64,6 +64,18 @@ spec:
                 rm -rf "${output_dir}"
                 mkdir "${output_dir}"
 
+                # Provide CA to new namespaces
+                if [[ -f /etc/tls/ca.crt ]]; then
+                  echo "Checking CA in client namespaces"
+                  for n in ${VAULT_CLIENT_NAMESPACES}; do
+                    if ! kubectl -n "${n}" get configmap "${secret_name}" > /dev/null 2>&1 ; then
+                      echo "Creating configmap in ${n}"
+                      kubectl -n "${n}" create configmap "${secret_name}" \
+                        --from-file /etc/tls/ca.crt
+                    fi
+                  done
+                fi
+
                 # Main loop
                 while true; do
                   # Sleep if certificate is not expiring soon

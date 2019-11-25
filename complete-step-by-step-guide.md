@@ -56,6 +56,8 @@ We need to create some resources on kube and AWS for Vault to use, and then conf
 
 ## Configuring a new app to get aws credentials from Vault
 * Create a role with the permission required and grant AssumeRole permission to Vault's credential provider user ([example](https://github.com/utilitywarehouse/terraform/blob/master/aws/dev/sys-aws-probe/main.tf))
-* In your terraform vault configuration repository, link your applications's SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-aws/kube-aws-credentials/main.tf))
-* If not yet present, add the application's namespace to the `VAULT_CLIENT_NAMESPACES` list in Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki.yaml))
+* In your terraform vault configuration repository, link your applications's SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-aws/kube-aws-credentials/roles-linked-to-apps.tf))
+* If not yet present, allow vault-pki to edit configmaps in the namespace ([example](https://github.com/utilitywarehouse/vault-manifests/tree/master/example/client-namespace))
+* If not yet present, add the application's namespace to the `VAULT_CLIENT_NAMESPACES` list in Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki-patch.yaml))
+* If needed, adjust network policies to allow the new application to talk to vault
 * Configure the app to use our [Vault sidecar](https://github.com/utilitywarehouse/vault-kube-aws-credentials) to get credentials for the role ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/labs/aws-probe.yaml))

@@ -1,4 +1,9 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-tls
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: vault-pki
@@ -64,15 +69,13 @@ spec:
                 rm -rf "${output_dir}"
                 mkdir "${output_dir}"
 
-                # Provide CA to new namespaces
+                # Updating CA in case there are new namespaces
                 if [[ -f /etc/tls/ca.crt ]]; then
-                  echo "Checking CA in client namespaces"
+                  echo "Updating CA in client namespaces"
                   for n in ${VAULT_CLIENT_NAMESPACES}; do
-                    if ! kubectl -n "${n}" get configmap "${secret_name}" > /dev/null 2>&1 ; then
-                      echo "Creating configmap in ${n}"
-                      kubectl -n "${n}" create configmap "${secret_name}" \
-                        --from-file /etc/tls/ca.crt
-                    fi
+                    kubectl -n "${n}" create configmap "${secret_name}" \
+                      --from-file /etc/tls/ca.crt \
+                      --dry-run -o yaml | kubectl -n "${n}" replace -f -
                   done
                 fi
 
@@ -149,13 +152,13 @@ spec:
                     --from-file "${output_dir}"/ca.crt \
                     --from-file "${output_dir}"/tls.crt \
                     --from-file "${output_dir}"/tls.key \
-                    --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" apply -f -
+                    --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" replace -f -
 
                   for n in ${VAULT_CLIENT_NAMESPACES}; do
                     echo "Updating configmap in ${n}"
                     kubectl -n "${n}" create configmap "${secret_name}" \
                       --from-file "${output_dir}"/ca.crt \
-                      --dry-run -o yaml | kubectl -n "${n}" apply -f -
+                      --dry-run -o yaml | kubectl -n "${n}" replace -f -
                   done
 
                   echo "Rotated successfully on $(date --rfc-3339='seconds')"

@@ -170,12 +170,13 @@ spec:
               leader_addr="https://${vault_name}-0.${vault_name}:8200";
               replicas="${VAULT_REPLICAS:-"3"}";
 
-              # Wait for vault api and check if initialization is needed
-              until curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/init"; do
+              # Wait until vault answers the initialization check
+              until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
+                initialized=$(curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/init" | jq '.initialized');
                 echo 'leader not ready, sleeping for 3 seconds';
                 sleep 3;
               done;
-              initialized=$(curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/init" | jq '.initialized');
+
               if [ "${initialized}" = "true" ];then
                 echo "vault is already initialized, going to sleep";
                 while true; do sleep 86400; done
@@ -244,17 +245,19 @@ spec:
               apk -q add curl jq;
 
               # Wait for vault api and sleep if not initialized
-              until curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init"; do
-                echo 'vault not ready, sleeping for 3 seconds';
+              until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
+                initialized=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
+                echo 'leader not ready, sleeping for 3 seconds';
                 sleep 3;
               done;
-              initialized=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
+
               if [ "${initialized}" = "false" ];then
                 echo "vault is not initialized, going to sleep";
                 while true; do sleep 86400; done
               fi
 
               # Unseal and sleep
+              echo 'Attempting to unseal vault'
               curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
                 -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
                 | jq .sealed \

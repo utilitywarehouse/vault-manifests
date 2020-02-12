@@ -9,6 +9,7 @@ kind: Secret
 metadata:
   name: vault
 ---
+# For use by vault clients
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,6 +17,21 @@ metadata:
   labels:
     app: vault
 spec:
+  selector:
+    app: vault
+  ports:
+    - port: 8200
+      name: public-api
+---
+# For internal cluster member communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-cluster
+  labels:
+    app: vault
+spec:
+  publishNotReadyAddresses: true
   clusterIP: None
   selector:
     app: vault
@@ -40,9 +56,9 @@ spec:
       labels:
         app: vault
       annotations:
-        prometheus.io/scrape: 'true'
+        prometheus.io/scrape: "true"
         prometheus.io/path: /__/metrics
-        prometheus.io/port: '8080'
+        prometheus.io/port: "8080"
     spec:
       serviceAccountName: vault
       shareProcessNamespace: true
@@ -76,7 +92,7 @@ spec:
               mountPath: /etc/tls
             - name: ssl-certs
               mountPath: /ssl-certs
-        # Write vautl config to file
+        # Write vault config to file
         - name: vault-config
           image: alpine
           command:
@@ -112,7 +128,7 @@ spec:
                 }
 
                 api_addr      = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8200"
-                cluster_addr  = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8201"
+                cluster_addr  = "https://$(POD_NAME).vault-cluster.$(POD_NAMESPACE):8201"
                 disable_mlock = true
           volumeMounts:
             - name: vault-config
@@ -135,16 +151,16 @@ spec:
                   optional: true
             - name: NGINX_CONFIG
               value: |
-                  server {
-                      listen       8080;
-                      server_name  localhost;
+                server {
+                    listen       8080;
+                    server_name  localhost;
 
-                      location /__/metrics {
-                          proxy_pass https://127.0.0.1:8200/v1/sys/metrics?format=prometheus;
-                          proxy_set_header X-Vault-Token %VAULT_TOKEN%;
-                          proxy_ssl_verify off;
-                      }
-                  }
+                    location /__/metrics {
+                        proxy_pass https://127.0.0.1:8200/v1/sys/metrics?format=prometheus;
+                        proxy_set_header X-Vault-Token %VAULT_TOKEN%;
+                        proxy_ssl_verify off;
+                    }
+                }
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
@@ -167,7 +183,7 @@ spec:
               apk -q add curl jq;
               vault_name="${VAULT_ADDR:-"vault"}";
               kubectl_version="${KUBECTL_VERSION:-"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"}";
-              leader_addr="https://${vault_name}-0.${vault_name}:8200";
+              leader_addr="https://${vault_name}-0.${vault_name}-cluster:8200";
               replicas="${VAULT_REPLICAS:-"3"}";
 
               # Wait until vault answers the initialization check
@@ -204,7 +220,7 @@ spec:
               {
                 replica_number="$1";
                 replica_name="${vault_name}-${replica_number}";
-                replica_addr="https://${replica_name}.${vault_name}:8200";
+                replica_addr="https://${replica_name}.${vault_name}-cluster:8200";
                 until curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/init"; do
                   echo "${replica_name} not ready, sleeping for 3 seconds";
                   sleep 3;
@@ -278,6 +294,22 @@ spec:
               mountPath: /etc/tls
         - name: vault
           image: vault:1.2.3
+          livenessProbe:
+            # Alive if Vault is uninitialized or unsealed and active/standby
+            httpGet:
+              path: /v1/sys/health?standbyok=true&uninitcode=204
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            # Ready if Vault is initialized, unsealed and active/standby
+            httpGet:
+              path: /v1/sys/health?standbyok=true
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
           command:
             - /usr/bin/dumb-init
             - --

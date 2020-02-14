@@ -24,7 +24,7 @@ spec:
       serviceAccountName: vault-pki
       containers:
         - name: pki-manager
-          image: quay.io/utilitywarehouse/vault-pki-manager:0.1.0
+          image: quay.io/utilitywarehouse/vault-pki-manager:0.1.1
           env:
             - name: VAULT_NAMESPACE
               valueFrom:

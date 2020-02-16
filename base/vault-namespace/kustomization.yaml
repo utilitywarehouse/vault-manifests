@@ -4,3 +4,7 @@ resources:
   - rbac.yaml
   - vault.yaml
   - vault-pki.yaml
+configMapGenerator:
+  - name: nginx-config
+    files:
+      - resources/nginx.conf

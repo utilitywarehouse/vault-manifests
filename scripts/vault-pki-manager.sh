@@ -1,4 +1,7 @@
-#!/usr/bin/env ash
+#!/bin/sh
+
+# This script updates the CA certificate+key and server certificate+key on a
+# daily basis and distributes the CA certificate to client namespaces
 
 : ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
 

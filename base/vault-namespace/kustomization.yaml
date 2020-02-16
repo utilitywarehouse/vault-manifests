@@ -8,3 +8,6 @@ configMapGenerator:
   - name: nginx-config
     files:
       - resources/nginx.conf
+images:
+  - name: quay.io/utilitywarehouse/vault-manifests
+    newTag: 1.3.2-1

@@ -138,7 +138,7 @@ spec:
               mountPath: /vault/config
       containers:
         - name: initializer
-          image: quay.io/utilitywarehouse/vault-manifests
+          image: quay.io/utilitywarehouse/vault-toolkit
           args:
             - initializer
           env:
@@ -148,7 +148,7 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: unsealer
-          image: quay.io/utilitywarehouse/vault-manifests
+          image: quay.io/utilitywarehouse/vault-toolkit
           args:
             - unsealer
           env:

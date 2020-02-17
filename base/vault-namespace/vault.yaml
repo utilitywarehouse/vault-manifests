@@ -138,73 +138,9 @@ spec:
               mountPath: /vault/config
       containers:
         - name: initializer
-          image: alpine
-          command:
-            - /bin/sh
-            - -c
-            - |
-              # Only run the initializer in the first replica
-              replica="${HOSTNAME: -1}";
-              if [ "${replica}" != "0" ];then
-                echo "this replica is not responsible for initialization, going to sleep";
-                while true; do sleep 86400; done
-              fi
-
-              # Validations and defaults
-              : ${VAULT_CACERT:?"Need to set VAULT_CACERT"};
-              apk -q add curl jq;
-              vault_name="${VAULT_ADDR:-"vault"}";
-              kubectl_version="${KUBECTL_VERSION:-"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"}";
-              leader_addr="https://${vault_name}-0.${vault_name}-cluster:8200";
-              replicas="${VAULT_REPLICAS:-"3"}";
-
-              # Wait until vault answers the initialization check
-              until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
-                initialized=$(curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/init" | jq '.initialized');
-                echo 'leader not ready, sleeping for 3 seconds';
-                sleep 3;
-              done;
-
-              if [ "${initialized}" = "true" ];then
-                echo "vault is already initialized, going to sleep";
-                while true; do sleep 86400; done
-              fi
-
-              # Install kubectl
-              curl -sLO "https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/linux/amd64/kubectl";
-              chmod +x ./kubectl;
-              mv ./kubectl /usr/local/bin;
-
-              # Initialize vault and update secret
-              init=$(curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/init" \
-                -XPUT -d '{"secret_shares":1,"secret_threshold": 1}');
-              token=$(echo "${init}" | jq -r '.root_token');
-              unseal_key=$(echo "${init}" | jq -r '.keys[0]');
-              kubectl patch secret vault -p '{"stringData":{"unseal-key":"'"${unseal_key}"'","root-token":"'"${token}"'"}}'
-              echo "vault initialized"
-
-              # Unseal leader
-              curl -s --cacert "${VAULT_CACERT}" "${leader_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
-              echo "leader unsealed"
-
-              # Wait for replicas api and join and unseal them
-              join_replica()
-              {
-                replica_number="$1";
-                replica_name="${vault_name}-${replica_number}";
-                replica_addr="https://${replica_name}.${vault_name}-cluster:8200";
-                until curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/init"; do
-                  echo "${replica_name} not ready, sleeping for 3 seconds";
-                  sleep 3;
-                done;
-
-                curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/storage/raft/join" -XPUT -d '{"leader_api_addr":"'"${leader_addr}"'"}'
-                curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
-                echo "${replica_name} joined and initialized"
-              }
-              for i in $(seq $(($replicas - 1))) ; do
-                join_replica $i;
-              done
+          image: quay.io/utilitywarehouse/vault-toolkit
+          args:
+            - initializer
           env:
             - name: VAULT_CACERT
               value: "/etc/tls/ca.crt"
@@ -212,43 +148,9 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: unsealer
-          image: alpine
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-
-              vault_addr="${VAULT_ADDR:-"https://127.0.0.1:8200"}";
-
-              # Sleep if no unseal key provided
-              if [ -z "${UNSEAL_KEY}" ]; then
-                echo "No unseal key provided, going to sleep";
-                while true; do sleep 86400; done
-              fi
-
-              apk -q add curl jq;
-
-              # Wait for vault api and sleep if not initialized
-              until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
-                initialized=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
-                echo 'leader not ready, sleeping for 3 seconds';
-                sleep 3;
-              done;
-
-              if [ "${initialized}" = "false" ];then
-                echo "vault is not initialized, going to sleep";
-                while true; do sleep 86400; done
-              fi
-
-              # Unseal and sleep
-              echo 'Attempting to unseal vault'
-              curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
-                -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
-                | jq .sealed \
-                | grep -q "^false$";
-              echo "vault unsealed, going to sleep";
-              while true; do sleep 86400; done
+          image: quay.io/utilitywarehouse/vault-toolkit
+          args:
+            - unsealer
           env:
             - name: VAULT_CACERT
               value: "/etc/tls/ca.crt"

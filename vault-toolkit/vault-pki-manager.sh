@@ -110,14 +110,30 @@ while true; do
         --from-file "${output_dir}"/tls.crt \
         --from-file "${output_dir}"/tls.key \
         --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" replace -f -
+    exit_code=$(echo $?)
+    if [ "${exit_code}" != "0" ];
+        echo "Error: failed to update secret in ${VAULT_NAMESPACE}, exiting"
+        exit 1
+    done
     
     if [[ -n "${VAULT_CLIENT_NAMESPACES}" ]]; then
         echo "Updating CA in client namespaces"
+        errors="false"
         for n in ${VAULT_CLIENT_NAMESPACES}; do
             echo "Updating configmap in ${n}"
             kubectl -n "${n}" create configmap "${secret_name}" \
                 --from-file "${output_dir}"/ca.crt \
                 --dry-run -o yaml | kubectl -n "${n}" replace -f -
+            exit_code=$(echo $?)
+            if [ "${exit_code}" != "0" ];
+                echo "Error: couldn't update configmap in ${n}"
+                errors="true"
+            done
+        done
+    done
+    if [ "${errors}" = "true" ];
+        echo "Error: couldn't update configmap on one or more namespaces, exiting"
+        exit 1
         done
     fi
 

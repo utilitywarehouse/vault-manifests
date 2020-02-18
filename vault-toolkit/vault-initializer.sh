@@ -51,7 +51,12 @@ join_replica()
     sleep 3;
   done;
 
-  curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/storage/raft/join" -XPUT -d '{"leader_api_addr":"'"${leader_addr}"'"}'
+  leader_ca_cert=$(awk 'NF {printf "%s\\n",$0;}' "${VAULT_CACERT}")
+  curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/storage/raft/join" -XPUT \
+    -d '{
+      "leader_api_addr":"'"${leader_addr}"'",
+      "leader_ca_cert":"'"${leader_ca_cert}"'"
+    }'
   curl -s --cacert "${VAULT_CACERT}" "${replica_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
   echo "${replica_name} joined and initialized"
 }

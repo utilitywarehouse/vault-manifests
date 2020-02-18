@@ -75,23 +75,6 @@ spec:
                 topologyKey: failure-domain.beta.kubernetes.io/zone
               weight: 100
       initContainers:
-        # Install ca cert as a root CA
-        - name: ca
-          image: alpine
-          command:
-            - sh
-            - -c
-            - |
-              set -e
-              apk add --update ca-certificates
-              cp /etc/tls/ca.crt /usr/local/share/ca-certificates/vault-ca.crt
-              update-ca-certificates
-              cp /etc/ssl/certs/* /ssl-certs
-          volumeMounts:
-            - name: tls
-              mountPath: /etc/tls
-            - name: ssl-certs
-              mountPath: /ssl-certs
         # Write vault config to file
         - name: vault-config
           image: alpine
@@ -197,8 +180,6 @@ spec:
               mountPath: /vault/storage
             - name: tls
               mountPath: /etc/tls
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -242,8 +223,6 @@ spec:
         - name: nginx-config
           configMap:
             name: nginx-config
-        - name: ssl-certs
-          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: storage

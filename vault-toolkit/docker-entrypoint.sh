@@ -1,3 +1,6 @@
 #!/bin/sh
 
-exec vault-${1}.sh
+cmd="vault-${1}.sh"
+shift
+
+exec "${cmd}" "$@"

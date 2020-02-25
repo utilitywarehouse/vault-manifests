@@ -4,6 +4,7 @@ kind: Role
 metadata:
   name: vault-configmap-applier
 rules:
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["vault-tls"]
+    verbs: ["create", "update", "patch"]

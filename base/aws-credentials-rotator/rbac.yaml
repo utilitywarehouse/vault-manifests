@@ -1,0 +1,9 @@
+# Used by vault-aws-credentials-rotator to update configmaps
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-configmap-patcher
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["patch"]

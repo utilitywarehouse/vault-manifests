@@ -3,6 +3,8 @@ kind: Kustomization
 bases:
   - ../../base/vault-namespace
   # github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.3.2-1
+  - ../../base/aws-credentials-rotator # exclude if you don't have an AWS secrets backend
+  # github.com/utilitywarehouse/vault-manifests//base/aws-credentials-rotator?ref=1.3.2-1
 patchesStrategicMerge:
   - vault-patch.yaml
   - vault-pki-patch.yaml

@@ -182,6 +182,16 @@ spec:
             runAsUser: 1000
             runAsGroup: 100
             allowPrivilegeEscalation: false
+        - name: vault-exporter
+          image: quay.io/giantswarm/vault-exporter:1.0.0
+          env:
+            - name: VAULT_CACERT
+              value: "/etc/tls/ca.crt"
+          ports:
+            - containerPort: 9410
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
         - name: statsd-exporter
           image: prom/statsd-exporter:v0.15.0
           args:

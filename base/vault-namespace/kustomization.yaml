@@ -5,9 +5,9 @@ resources:
   - vault.yaml
   - vault-pki.yaml
 configMapGenerator:
-  - name: nginx-config
+  - name: statsd-mappings
     files:
-      - resources/nginx.conf
+      - resources/statsd-mappings.yaml
 images:
   - name: quay.io/utilitywarehouse/vault-toolkit
     newTag: 1.3.2-1

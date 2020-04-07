@@ -41,6 +41,40 @@ spec:
     - port: 8201
       name: members-internal-api
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-statsd-exporter
+  labels:
+    app: vault
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9102"
+spec:
+  selector:
+    app: vault
+  ports:
+    - port: 9102
+      name: statsd-exporter
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-exporter
+  labels:
+    app: vault
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9410"
+spec:
+  selector:
+    app: vault
+  ports:
+    - port: 9410
+      name: vault-exporter
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -55,10 +89,6 @@ spec:
     metadata:
       labels:
         app: vault
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9102"
     spec:
       serviceAccountName: vault
       shareProcessNamespace: true

@@ -2,6 +2,7 @@ mappings:
   # vault.route.update.auth-kubernetes- -> vault_route{method="update",path="auth-kubernetes"}
   - match: vault\.route\.(.*)\.(.*)-
     match_type: regex
+    timer_type: histogram
     name: "vault_route"
     labels:
       method: "$1"
@@ -9,16 +10,19 @@ mappings:
   # vault.rollback.attempt.sys- -> vault_rollback_attempt{path="sys"}
   - match: vault\.rollback\.attempt\.(.*)-
     match_type: regex
+    timer_type: histogram
     name: "vault_rollback_attempt"
     labels:
       path: "$1"
   # vault.barrier.delete -> vault_barrier{method="delete"}
   - match: vault.barrier.*
     name: "vault_barrier"
+    timer_type: histogram
     labels:
       method: "$1"
   # vault.raft.storage.get -> vault_raft_storage{method="get"}
   - match: vault.raft.storage.*
     name: "vault_raft_storage"
+    timer_type: histogram
     labels:
       method: "$1"

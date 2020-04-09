@@ -247,7 +247,9 @@ spec:
               if [ "$#" -eq 3 ] && [ "$3" == "..data" ]; then
                   echo "[" $(date -uIseconds) "] config seems to have changed, reloading ..."
                   vault_pid=$(pgrep -x vault)
+                  vault_exporter_pid=$(pgrep -x /usr/bin/vault-exporter)
                   kill -HUP "${vault_pid}"
+                  kill -TERM "${vault_exporter_pid}"
               fi' > /reload && chmod +x /reload && inotifyd /reload /etc/tls:y
           volumeMounts:
             - name: tls

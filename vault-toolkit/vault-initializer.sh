@@ -10,9 +10,9 @@ local_addr="${VAULT_LOCAL_ADDR:-"https://127.0.0.1:8200"}"
 vault_addr="${VAULT_ADDR:-"https://vault:8200"}"
 
 # Wait until vault answers the initialization check
-initialized=$(curl -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
+initialized=$(curl -f -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
 until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
-  initialized=$(curl -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
+  initialized=$(curl -f -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
   echo "vault not ready, sleeping for 3 seconds"
   sleep 3
 done
@@ -24,11 +24,11 @@ fi
 
 # If there's no current leader and this is the first replica then initialize
 # the cluster, otherwise join the current leader
-leader_addr=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')
+leader_addr=$(curl -f -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')
 if [ -z "${leader_addr}" ]; then
   if [ "${HOSTNAME: -1}" = "0" ]; then
     # Initialize vault and update secret
-    init=$(curl -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" \
+    init=$(curl -f -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" \
       -XPUT -d '{"secret_shares":1,"secret_threshold": 1}')
     token=$(echo "${init}" | jq -r '.root_token')
     unseal_key=$(echo "${init}" | jq -r '.keys[0]')
@@ -41,7 +41,7 @@ if [ -z "${leader_addr}" ]; then
 else
   # join the leader
   leader_ca_cert=$(awk 'NF {printf "%s\\n",$0;}' "${VAULT_CACERT}")
-  curl -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/storage/raft/join" -XPUT \
+  curl -f -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/storage/raft/join" -XPUT \
     -d '{
       "leader_api_addr":"'"${leader_addr}"'",
       "leader_ca_cert":"'"${leader_ca_cert}"'",
@@ -55,7 +55,7 @@ echo "unsealing vault"
 if [ -z "${unseal_key}" ]; then
   unseal_key=$(kubectl get secret vault -o jsonpath={.data.unseal-key} | base64 -d)
 fi
-curl -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
+curl -f -s --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
 echo "vault unsealed"
 
 echo "initialization completed, going to sleep"

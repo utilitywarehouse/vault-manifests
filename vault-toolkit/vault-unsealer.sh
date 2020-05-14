@@ -14,7 +14,7 @@ fi
 
 # Wait for vault api and sleep if not initialized
 until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
-  initialized=$(curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
+  initialized=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
   echo 'leader not ready, sleeping for 3 seconds';
   sleep 3;
 done;
@@ -26,7 +26,7 @@ fi
 
 # Unseal and sleep
 echo 'Attempting to unseal vault'
-curl -s --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
+curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
   -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
   | jq .sealed \
   | grep -q "^false$";

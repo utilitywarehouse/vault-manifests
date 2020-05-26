@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
   - ../../base/vault-namespace
-  # github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.3.2-3
+  # github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.4.1-1
 patchesStrategicMerge:
   - vault-patch.yaml
   - vault-pki-patch.yaml

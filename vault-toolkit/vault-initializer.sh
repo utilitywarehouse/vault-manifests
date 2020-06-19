@@ -10,14 +10,12 @@ local_addr="${VAULT_LOCAL_ADDR:-"https://127.0.0.1:8200"}"
 vault_addr="${VAULT_ADDR:-"https://vault:8200"}"
 
 # Wait until vault answers the initialization check
-initialized=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
-until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
-  initialized=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq '.initialized')
+until [ $(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true or .initialized == false') ]; do
   echo "vault not ready, sleeping for 3 seconds"
   sleep 3
 done
 
-if [ "${initialized}" = "true" ]; then
+if [ $(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true') ]; then
   echo "vault is already initialized, going to sleep"
   while true; do sleep 86400; done
 fi

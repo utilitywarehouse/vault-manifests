@@ -28,7 +28,6 @@ fi
 echo 'Attempting to unseal vault'
 curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
   -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
-  | jq .sealed \
-  | grep -q "^false$";
+  | jq -e -r '."sealed" == false'
 echo "vault unsealed, going to sleep";
 while true; do sleep 86400; done

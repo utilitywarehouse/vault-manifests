@@ -175,14 +175,6 @@ spec:
               mountPath: /etc/tls
         - name: vault
           image: vault:1.4.1
-          livenessProbe:
-            # Alive if Vault is uninitialized or unsealed and active/standby
-            httpGet:
-              path: /v1/sys/health?standbyok=true&uninitcode=204
-              port: 8200
-              scheme: HTTPS
-            initialDelaySeconds: 30
-            periodSeconds: 10
           readinessProbe:
             # Ready if Vault is initialized, unsealed and active/standby
             httpGet:

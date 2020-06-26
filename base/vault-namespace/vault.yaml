@@ -174,7 +174,7 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: vault
-          image: vault:1.4.1
+          image: vault:1.4.2
           readinessProbe:
             # Ready if Vault is initialized, unsealed and active/standby
             httpGet:

@@ -10,12 +10,12 @@ local_addr="${VAULT_LOCAL_ADDR:-"https://127.0.0.1:8200"}"
 vault_addr="${VAULT_ADDR:-"https://vault:8200"}"
 
 # Wait until vault answers the initialization check
-until [ $(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true or .initialized == false') ]; do
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true or .initialized == false' >/dev/null 2>&1; do
   echo "vault not ready, sleeping for 3 seconds"
   sleep 3
 done
 
-if [ $(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true') ]; then
+if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true' >/dev/null 2>&1; then
   echo "vault is already initialized, going to sleep"
   while true; do sleep 86400; done
 fi
@@ -51,7 +51,7 @@ fi
 # Unseal vault
 echo "unsealing vault"
 if [ -z "${unseal_key}" ]; then
-  unseal_key=$(kubectl get secret vault -o jsonpath={.data.unseal-key} | base64 -d)
+  unseal_key=$(kubectl get secret vault -o jsonpath='{.data.unseal-key}' | base64 -d)
 fi
 curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
 echo "vault unsealed"

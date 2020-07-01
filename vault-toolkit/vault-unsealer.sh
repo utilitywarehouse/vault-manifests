@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script unseals the local vault instance with the ${UNSEAL_KEY}
 
-set -e
+set -o nounset
+set -o errexit
+set -o pipefail
 
 vault_addr="${VAULT_ADDR:-"https://127.0.0.1:8200"}";
 
@@ -13,7 +15,7 @@ if [ -z "${UNSEAL_KEY}" ]; then
 fi
 
 # Wait for vault api and sleep if not initialized
-until [ "${initialized}" = "true" -o "${initialized}" = "false" ]; do
+until [ "${initialized}" == "true" ] || [ "${initialized}" == "false" ]; do
   initialized=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
   echo 'leader not ready, sleeping for 3 seconds';
   sleep 3;

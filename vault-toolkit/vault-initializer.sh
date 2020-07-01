@@ -1,11 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script initializes the local vault.
 
-set -e
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # Validations and defaults
-: ${VAULT_CACERT:?"Need to set VAULT_CACERT"}
+: "${VAULT_CACERT:?Need to set VAULT_CACERT}"
 local_addr="${VAULT_LOCAL_ADDR:-"https://127.0.0.1:8200"}"
 vault_addr="${VAULT_ADDR:-"https://vault:8200"}"
 

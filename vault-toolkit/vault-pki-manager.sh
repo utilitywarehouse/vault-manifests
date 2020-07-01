@@ -1,9 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script updates the CA certificate+key and server certificate+key on a
 # daily basis and distributes the CA certificate to client namespaces
 
-: ${VAULT_NAMESPACE:?"Need to set VAULT_NAMESPACE"}
+set -o nounset
+set -o errexit
+set -o pipefail
+
+: "${VAULT_NAMESPACE:?Need to set VAULT_NAMESPACE}"
 
 secret_name="${VAULT_SECRET_NAME:-"vault-tls"}"
 vault_name="${VAULT_NAME:-"vault"}"
@@ -31,7 +35,7 @@ while true; do
         now_seconds=$(date +%s)
         cert_expiration=$(cfssl certinfo -cert /etc/tls/ca.crt | jq -r '.not_after' | sed -e 's/T/ /g' -e 's/Z$//g')
         expiration_seconds=$(date -d "${cert_expiration}" +%s)
-        validity=$((${expiration_seconds} - ${now_seconds}))
+        validity=$((expiration_seconds - now_seconds))
         if [[ ${validity} -gt 7200 ]]; then # 2h
             sleep 1500 # 25 min
             continue
@@ -74,7 +78,7 @@ while true; do
         "'"${vault_name}.${VAULT_NAMESPACE}"'",
         "'"${vault_name}-cluster.${VAULT_NAMESPACE}"'"
     '
-    for i in $(seq 0 $(($replicas - 1))) ; do
+    for i in $(seq 0 $((replicas - 1))) ; do
         hosts='
             '"${hosts}"',
             "'"${vault_name}-${i}.${vault_name}"'",
@@ -91,10 +95,10 @@ while true; do
         -ca "${output_dir}"/ca-cert.pem \
         -ca-key "${output_dir}"/ca-key.pem \
         "${output_dir}"/server-config.json | cfssljson -bare "${output_dir}"/server
-    
+
     mv "${output_dir}"/server.pem "${output_dir}"/server-cert.pem
     rm "${output_dir}"/server.csr
-    
+
     # Rename files and delete CA key
     mv "${output_dir}"/ca-cert.pem "${output_dir}"/ca.crt
     rm "${output_dir}"/ca-key.pem
@@ -110,12 +114,12 @@ while true; do
         --from-file "${output_dir}"/tls.crt \
         --from-file "${output_dir}"/tls.key \
         --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" replace -f -
-    exit_code=$(echo $?)
+    exit_code=$?
     if [ "${exit_code}" != "0" ]; then
         echo "Error: failed to update secret in ${VAULT_NAMESPACE}, exiting"
         exit 1
     fi
-    
+
     if [[ -n "${VAULT_CLIENT_NAMESPACES}" ]]; then
         echo "Updating CA in client namespaces"
         errors="false"
@@ -124,7 +128,7 @@ while true; do
             kubectl -n "${n}" create configmap "${secret_name}" \
                 --from-file "${output_dir}"/ca.crt \
                 --dry-run -o yaml | kubectl -n "${n}" replace -f -
-            exit_code=$(echo $?)
+            exit_code=$?
             if [ "${exit_code}" != "0" ]; then
                 echo "Error: couldn't update configmap in ${n}"
                 errors="true"

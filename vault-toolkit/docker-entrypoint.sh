@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/bin/bash
 
-exec vault-${1}.sh
+exec "vault-${1}.sh"

@@ -24,6 +24,7 @@ fi
 
 # If there's no current leader and this is the first replica then initialize
 # the cluster, otherwise join the current leader
+unseal_key=""
 leader_addr=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')
 if [ -z "${leader_addr}" ]; then
   if [ "${HOSTNAME: -1}" = "0" ]; then

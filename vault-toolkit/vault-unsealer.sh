@@ -6,7 +6,7 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-vault_addr="${VAULT_ADDR:-"https://127.0.0.1:8200"}";
+vault_addr="${VAULT_ADDR:-https://127.0.0.1:8200}";
 UNSEAL_KEY="${UNSEAL_KEY:-}"
 
 # Sleep if no unseal key provided
@@ -15,15 +15,13 @@ if [ -z "${UNSEAL_KEY}" ]; then
   while true; do sleep 86400; done
 fi
 
-# Wait for vault api and sleep if not initialized
-initialized=""
-until [ "${initialized}" == "true" ] || [ "${initialized}" == "false" ]; do
-  initialized=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq '.initialized');
-  echo 'leader not ready, sleeping for 3 seconds';
-  sleep 3;
-done;
+# Wait until vault answers the initialization check
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq -e '.initialized == true or .initialized == false' >/dev/null 2>&1; do
+  echo "vault not ready, sleeping for 3 seconds"
+  sleep 3
+done
 
-if [ "${initialized}" = "false" ];then
+if curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
   echo "vault is not initialized, going to sleep";
   while true; do sleep 86400; done
 fi

@@ -25,8 +25,7 @@ fi
 # If there's no current leader and this is the first replica then initialize
 # the cluster, otherwise join the current leader
 unseal_key=""
-leader_addr=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')
-if [ -z "${leader_addr}" ]; then
+if [ -z "$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')" ]; then
   if [ "${HOSTNAME: -1}" = "0" ]; then
     # Initialize vault and update secret
     init=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" \
@@ -41,6 +40,7 @@ if [ -z "${leader_addr}" ]; then
   fi
 else
   # join the leader
+  leader_addr=$(curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/leader" | jq -r '.leader_address')
   leader_ca_cert=$(awk 'NF {printf "%s\\n",$0;}' "${VAULT_CACERT}")
   curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/storage/raft/join" -XPUT \
     -d '{

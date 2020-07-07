@@ -31,5 +31,16 @@ echo 'Attempting to unseal vault'
 curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
   -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
   | jq -e -r '."sealed" == false'
-echo "vault unsealed, going to sleep";
-while true; do sleep 86400; done
+echo "vault unsealed";
+
+# watch for vault's re-seals, for example by vault's container restarts
+while true; do
+  if curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
+    echo "sealed vault detected, attempting to unseal"
+    curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/unseal" \
+      -XPUT -d '{"key":"'"${UNSEAL_KEY}"'"}' \
+      | jq -e -r '."sealed" == false'
+    echo "vault unsealed";
+  fi
+  sleep 15
+done

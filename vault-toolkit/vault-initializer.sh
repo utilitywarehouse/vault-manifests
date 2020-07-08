@@ -57,7 +57,17 @@ if [ -z "${unseal_key}" ]; then
   unseal_key=$(kubectl get secret vault -o jsonpath='{.data.unseal-key}' | base64 -d)
 fi
 curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/unseal" -XPUT -d '{"key":"'"${unseal_key}"'"}'
+
+# Wait for vault to be unsealed
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${vault_addr}/v1/sys/seal-status" | jq -e '.sealed == false' >/dev/null 2>&1; do
+  echo "vault not unsealed, sleeping for 3 seconds"
+  sleep 3
+done
 echo "vault unsealed"
+
+# Enable auditing to stdout
+curl --cacert "${VAULT_CACERT}" --header "X-Vault-Token: ${token}" -XPUT -d '{"type":"file","options":{"file_path":"stdout"}}' "${vault_addr}/v1/sys/audit/stdout"
+echo "auditing enabled"
 
 echo "initialization completed, going to sleep"
 while true; do sleep 86400; done

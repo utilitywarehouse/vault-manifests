@@ -1,8 +1,0 @@
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: vault
-  # startup logs are sensitive, so you may want to exclude them from
-  # your logging pipeline
-  annotations:
-    fluentbit.io/exclude: "true"

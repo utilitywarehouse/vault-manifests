@@ -4,7 +4,6 @@ bases:
   - ../../base/vault-namespace
   # github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.4.3-1
 patchesStrategicMerge:
-  - vault-patch.yaml
   - vault-pki-patch.yaml
 resources:
   - rbac.yaml

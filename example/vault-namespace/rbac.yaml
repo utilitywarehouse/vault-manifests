@@ -1,16 +1,26 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: vault-secret-applier
+  name: vault
 roleRef:
   kind: Role
-  name: vault-secret-applier
+  name: vault
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount
     name: vault
     # Placeholder, patch with the vault namespace value
     namespace: example
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-pki
+roleRef:
+  kind: Role
+  name: vault
+  apiGroup: rbac.authorization.k8s.io
+subjects:
   - kind: ServiceAccount
     name: vault-pki
     # Placeholder, patch with the vault namespace value

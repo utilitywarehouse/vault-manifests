@@ -1,9 +1,24 @@
-# Used by vault initializer and vault-pki to update secrets
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: vault-secret-applier
+  name: vault
 rules:
+  # Allows vault pods to label themselves with their current status:
+  #   - https://www.vaultproject.io/docs/configuration/service-registration/kubernetes
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "update", "patch"]
+  # Used by vault initializer to update secrets
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-pki
+rules:
+  # Used by vault-pki-manager to update secrets with certificates
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "create", "update", "patch"]

@@ -140,6 +140,11 @@ spec:
                   statsd_address = "localhost:9125"
                 }
 
+                service_registration "kubernetes" {
+                  namespace = "$(POD_NAMESPACE)"
+                  pod_name  = "$(POD_NAME)"
+                }
+
                 api_addr      = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8200"
                 cluster_addr  = "https://$(POD_NAME).vault-cluster.$(POD_NAMESPACE):8201"
                 disable_mlock = true
@@ -174,7 +179,7 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: vault
-          image: vault:1.4.3
+          image: vault:1.5.0
           readinessProbe:
             # Ready if Vault is initialized, unsealed and active/standby
             httpGet:

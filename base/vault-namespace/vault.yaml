@@ -211,14 +211,10 @@ spec:
             allowPrivilegeEscalation: false
         - name: vault-exporter
           image: quay.io/giantswarm/vault-exporter:1.0.0
-          env:
-            - name: VAULT_CACERT
-              value: "/etc/tls/ca.crt"
+          args:
+            - --insecure-ssl
           ports:
             - containerPort: 9410
-          volumeMounts:
-            - name: tls
-              mountPath: /etc/tls
         - name: statsd-exporter
           image: prom/statsd-exporter:v0.15.0
           args:
@@ -244,7 +240,6 @@ spec:
               if [ "$#" -eq 3 ] && [ "$3" == "..data" ]; then
                   echo "[" $(date -uIseconds) "] config seems to have changed, reloading ..."
                   pkill -HUP -x vault
-                  pkill -TERM -x /usr/bin/vault-exporter
               fi' > /reload && chmod +x /reload && inotifyd /reload /etc/tls:y
           volumeMounts:
             - name: tls

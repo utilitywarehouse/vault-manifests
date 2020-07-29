@@ -25,7 +25,7 @@ In vault's namespace:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
-  - github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.4.3-1
+  - github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.5.0-1
 ```
 
 In client's namespaces:
@@ -33,7 +33,7 @@ In client's namespaces:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
-  - github.com/utilitywarehouse/vault-manifests//base/client-namespace?ref=1.4.3-1
+  - github.com/utilitywarehouse/vault-manifests//base/client-namespace?ref=1.5.0-1
 ```
 
 Somewhere with permission to apply cluster-wide resources
@@ -41,7 +41,7 @@ Somewhere with permission to apply cluster-wide resources
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 bases:
-  - github.com/utilitywarehouse/vault-manifests//base/cluster-wide?ref=1.4.3-1
+  - github.com/utilitywarehouse/vault-manifests//base/cluster-wide?ref=1.5.0-1
 ```
 
 ## Examples

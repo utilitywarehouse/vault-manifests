@@ -24,7 +24,7 @@ if [[ -f /etc/tls/ca.crt ]] && [[ -n "${VAULT_CLIENT_NAMESPACES}" ]]; then
         echo "Updating configmap in ${n}"
         kubectl -n "${n}" create configmap "${secret_name}" \
             --from-file /etc/tls/ca.crt \
-            --dry-run -o yaml | kubectl -n "${n}" replace -f -
+            --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
     done
 fi
 
@@ -113,7 +113,7 @@ while true; do
         --from-file "${output_dir}"/ca.crt \
         --from-file "${output_dir}"/tls.crt \
         --from-file "${output_dir}"/tls.key \
-        --dry-run -o yaml | kubectl -n "${VAULT_NAMESPACE}" replace -f -
+        --dry-run=client -o yaml | kubectl -n "${VAULT_NAMESPACE}" replace -f -
     exit_code=$?
     if [ "${exit_code}" != "0" ]; then
         echo "Error: failed to update secret in ${VAULT_NAMESPACE}, exiting"
@@ -127,7 +127,7 @@ while true; do
             echo "Updating configmap in ${n}"
             kubectl -n "${n}" create configmap "${secret_name}" \
                 --from-file "${output_dir}"/ca.crt \
-                --dry-run -o yaml | kubectl -n "${n}" replace -f -
+                --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
             exit_code=$?
             if [ "${exit_code}" != "0" ]; then
                 echo "Error: couldn't update configmap in ${n}"

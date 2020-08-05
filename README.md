@@ -14,7 +14,7 @@ This repository provides a Kustomize base for Hashicorp's Vault.
 * Security considerations based on: configuration via terraform using root token, clients login via kube SA, secrets provided by cloud providers engines (aws/gcp)
 * Vault state is driven via configuration: vault can be wiped and recreated at will. There's no need for backups or seal/unseal procedures. If something goes wrong, delete and recreate
 * Namespace admins have full-access to vault. The root token, the single unseal key and the TLS secrets all live in the namespace next to vault server
-* All the possible vault clients are controlled by the vault admins. This is needed to allow daily CA key rotation
+* All the possible vault clients must be controlled by the vault admins. This is needed to allow daily CA key rotation
 
 ## Usage
 

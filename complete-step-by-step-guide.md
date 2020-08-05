@@ -5,21 +5,25 @@ This is an example of an application accessing an AWS bucket without managing pa
 
 * [Overview of the elements of the system](#overview-of-the-elements-of-the-system)
 * [Setting up Vault for Kubernetes auth and cloud provider credentials](#setting-up-vault-for-kubernetes-auth-and-cloud-provider-credentials)
-    * [Deploying vault](#deploying-vault)
-    * [Creating resources needed to configure Vault](#creating-resources-needed-to-configure-vault)
-        * [Kubernetes authentication resources](#kubernetes-authentication-resources)
-        * [AWS](#aws)
-            * [Secrets resources](#secrets-resources)
-            * [Terraform applier state backend](#terraform-applier-state-backend)
-        * [GCP](#gcp)
-            * [Secrets resources](#secrets-resources-1)
-            * [Terraform applier state backend](#terraform-applier-state-backend-1)
-    * [Creating Vault's backends configuration](#creating-vaults-backends-configuration)
-    * [Deploy terraform applier](#deploy-terraform-applier)
-    * [Setup alerts](#setup-alerts)
+  * [Deploying vault](#deploying-vault)
+  * [Creating resources needed to configure Vault](#creating-resources-needed-to-configure-vault)
+    * [Kubernetes authentication resources](#kubernetes-authentication-resources)
+    * [AWS](#aws)
+      * [Secrets resources](#secrets-resources)
+      * [Terraform applier state backend](#terraform-applier-state-backend)
+    * [GCP](#gcp)
+      * [Secrets resources](#secrets-resources-1)
+      * [Terraform applier state backend](#terraform-applier-state-backend-1)
+  * [Creating Vault's backends configuration](#creating-vaults-backends-configuration)
+  * [Deploy terraform applier](#deploy-terraform-applier)
+  * [Setup alerts](#setup-alerts)
 * [Configuring a new app to get aws credentials from Vault](#configuring-a-new-app-to-get-aws-credentials-from-vault)
+  * [Prepare the client namespace](#prepare-the-client-namespace)
+  * [Enable the new namespace](#enable-the-new-namespace)
+  * [Configure Vault to grant a SA access to cloud resources](#configure-vault-to-grant-a-sa-access-to-cloud-resources)
     * [AWS](#aws-1)
     * [GCP](#gcp-1)
+  * [Add our Vault sidecar to the app manifest](#add-our-vault-sidecar-to-the-app-manifest)
 
 <!-- vim-markdown-toc -->
 
@@ -113,23 +117,29 @@ for an explanation.
 
 ## Configuring a new app to get aws credentials from Vault
 
-* If not yet present, create vault-tls configmap and allow vault-pki to edit
-  configmaps in the namespace ([example](/example/client-namespace))
-* If not yet present, add the application's namespace to the
-  `VAULT_CLIENT_NAMESPACES` list in Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki-patch.yaml))
-* If needed, adjust network policies to allow the new application to talk to
-  vault
+### Prepare the client namespace
+Create vault-tls configmap and allow vault-pki to edit
+configmaps in the client namespace ([example](/example/client-namespace))
 
-### AWS
-* Create a role with the permission required and grant AssumeRole permission to Vault's credential provider user ([example](https://github.com/utilitywarehouse/terraform/blob/master/aws/dev/sys-aws-probe/main.tf))
+### Enable the new namespace
+* Add the application's namespace to the `VAULT_CLIENT_NAMESPACES` list in
+  Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki-patch.yaml))
+* Adjust network policies to allow the new application to talk to Vault's
+
+### Configure Vault to grant a SA access to cloud resources
+
+#### AWS
+* Create a role with the permission required and grant AssumeRole permission
+  to Vault's credential provider user ([example](https://github.com/utilitywarehouse/terraform/blob/master/aws/dev/sys-aws-probe/main.tf))
 * In your terraform vault configuration repository, link your applications's
   SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-aws/kube-aws-credentials/roles-linked-to-apps.tf))
-* Configure the app to use our [Vault sidecar](https://github.com/utilitywarehouse/vault-kube-cloud-credentials)
-  to get credentials for the role ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/labs/aws-probe.yaml))
 
-### GCP
+#### GCP
+In your terraform vault configuration repository, link your applications's
+SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-gcp/kube-gcp-credentials/roles-linked-to-apps.tf))
 
-* In your terraform vault configuration repository, link your applications's
-  SA to the new role using our custom module ([example](https://github.com/utilitywarehouse/sys-vault-terraform/blob/master/exp-1-gcp/kube-gcp-credentials/roles-linked-to-apps.tf))
-* Configure the app to use our [Vault sidecar](https://github.com/utilitywarehouse/vault-kube-cloud-credentials)
-  to get credentials for the role ([example](https://github.com/utilitywarehouse/vault-kube-cloud-credentials/blob/master/example/gcp-probe.yaml))
+### Add our Vault sidecar to the app manifest
+Configure the app to use our [Vault sidecar](https://github.com/utilitywarehouse/vault-kube-cloud-credentials)
+to get credentias for the role
+* [AWS example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/labs/aws-probe.yaml)
+* [GCP example](https://github.com/utilitywarehouse/vault-kube-cloud-credentials/blob/master/example/gcp-probe.yaml)

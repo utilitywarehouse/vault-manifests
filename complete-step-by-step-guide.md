@@ -42,7 +42,7 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
   (https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
   requesting them
 * Terraform applier for Vault: applies configuration to Vault from a git repo
-* Vault pki: manages the PKI elements for Vault and it's clients
+* Vault pki: manages the PKI elements for Vault and its clients
 
 ## Setting up Vault for Kubernetes auth and cloud provider credentials
 We want the Vault server to be able to provide cloud provider credentials to

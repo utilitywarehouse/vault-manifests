@@ -1,11 +1,25 @@
 # vault-manifests
 
+Table of Contents
+=================
+
+   * [vault-manifests](#vault-manifests)
+   * [Table of Contents](#table-of-contents)
+      * [Features](#features)
+      * [Considerations of this Vault setup](#considerations-of-this-vault-setup)
+      * [Usage](#usage)
+      * [Examples](#examples)
+      * [Requires](#requires)
+      * [Step by step guide of a complete system](#step-by-step-guide-of-a-complete-system)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
 This repository provides a Kustomize base for Hashicorp's Vault.
 
 **IMPORTANT**: This setup is aimed at a very specific use case. Be careful using it for other use-cases, as some design decision taken here may carry security risks for different uses of Vault.
 
 ## Features
-* Local auto-initialization and auto-unseal
+* Self-initialization and self-unseal
 * Prometheus metrics
 * PKI management with aggressive rotation (CA key gets recreated every 24h)
 * Highly Available
@@ -46,7 +60,7 @@ bases:
 
 ## Examples
 
-Build the examples [example](example/*):
+Build the examples [example](example/):
 
 ```
 kustomize build example/vault-namespace

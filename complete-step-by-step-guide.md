@@ -1,45 +1,53 @@
 # Step-by-step: setting up a full system with example configuration for a client app
-This is an example of an application accessing an AWS bucket without managing passwords, making use of this vault setup plus some other companion systems.
 
-<!-- vim-markdown-toc GFM -->
+This is an example of an application accessing an AWS bucket without static IAM
+credentials, making use of the vault setup plus some companion systems.
 
-* [Overview of the elements of the system](#overview-of-the-elements-of-the-system)
-* [Setting up Vault for Kubernetes auth and cloud provider credentials](#setting-up-vault-for-kubernetes-auth-and-cloud-provider-credentials)
-  * [Deploying vault](#deploying-vault)
-  * [Creating resources needed to configure Vault](#creating-resources-needed-to-configure-vault)
-    * [Kubernetes authentication resources](#kubernetes-authentication-resources)
-    * [AWS](#aws)
-      * [Secrets resources](#secrets-resources)
-      * [Terraform applier state backend](#terraform-applier-state-backend)
-    * [GCP](#gcp)
-      * [Secrets resources](#secrets-resources-1)
-      * [Terraform applier state backend](#terraform-applier-state-backend-1)
-  * [Creating Vault's backends configuration](#creating-vaults-backends-configuration)
-  * [Deploy terraform applier](#deploy-terraform-applier)
-  * [Setup alerts](#setup-alerts)
-* [Configuring a new app to get aws credentials from Vault](#configuring-a-new-app-to-get-aws-credentials-from-vault)
-  * [Prepare the client namespace](#prepare-the-client-namespace)
-  * [Enable the new namespace](#enable-the-new-namespace)
-  * [Configure Vault to grant a SA access to cloud resources](#configure-vault-to-grant-a-sa-access-to-cloud-resources)
-    * [AWS](#aws-1)
-    * [GCP](#gcp-1)
-  * [Add our Vault sidecar to the app manifest](#add-our-vault-sidecar-to-the-app-manifest)
+Table of Contents
+=================
 
-<!-- vim-markdown-toc -->
+   * [Step-by-step: setting up a full system with example configuration for a client app](#step-by-step-setting-up-a-full-system-with-example-configuration-for-a-client-app)
+   * [Table of Contents](#table-of-contents)
+      * [Overview of the elements of the system](#overview-of-the-elements-of-the-system)
+      * [Setting up Vault for Kubernetes auth and cloud provider credentials](#setting-up-vault-for-kubernetes-auth-and-cloud-provider-credentials)
+         * [Deploying vault](#deploying-vault)
+         * [Creating resources needed to configure Vault](#creating-resources-needed-to-configure-vault)
+            * [Kubernetes authentication resources](#kubernetes-authentication-resources)
+            * [AWS](#aws)
+               * [Secrets resources](#secrets-resources)
+               * [Terraform applier state backend](#terraform-applier-state-backend)
+            * [GCP](#gcp)
+               * [Secrets resources](#secrets-resources-1)
+               * [Terraform applier state backend](#terraform-applier-state-backend-1)
+         * [Creating Vault's backends configuration](#creating-vaults-backends-configuration)
+         * [Deploy terraform applier](#deploy-terraform-applier)
+         * [Setup alerts](#setup-alerts)
+      * [Configuring a new app to get aws credentials from Vault](#configuring-a-new-app-to-get-aws-credentials-from-vault)
+         * [Prepare the client namespace](#prepare-the-client-namespace)
+         * [Enable the new namespace](#enable-the-new-namespace)
+         * [Configure Vault to grant a SA access to cloud resources](#configure-vault-to-grant-a-sa-access-to-cloud-resources)
+            * [AWS](#aws-1)
+            * [GCP](#gcp-1)
+         * [Add our Vault sidecar to the app manifest](#add-our-vault-sidecar-to-the-app-manifest)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Overview of the elements of the system
+
 * Client app: the application that needs access to some cloud resources
 * Vault client sidecar: sidecar to the client app that fetches credentials from
   Vault and serves them via http
 * Vault server: this vault server. Provides cloud provider credentials based on
-  the Service Account requesting them
+  the ServiceAccount
+  (https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+  requesting them
 * Terraform applier for Vault: applies configuration to Vault from a git repo
-* Vault pki: manages the PKI elements for Vault and its clients
+* Vault pki: manages the PKI elements for Vault and it's clients
 
 ## Setting up Vault for Kubernetes auth and cloud provider credentials
-We want a Vault server able to provide cloud provider credentials to specific
-kubernetes ServiceAccounts. Vault configuration will live in its own repo, and
-will be applied to Vault using terraform-applier.
+We want the Vault server to be able to provide cloud provider credentials to
+specific kubernetes ServiceAccounts. Vault configuration will live in its own
+repo, and will be applied to Vault using terraform-applier.
 
 Example setups:
 - [AWS](https://github.com/utilitywarehouse/kubernetes-manifests/tree/master/exp-1-aws/sys-vault)
@@ -48,8 +56,10 @@ Example setups:
 These are identical except for terraform-applier, which is explained below.
 
 ### Deploying vault
-* Setup necessary [cluster wide permissions](/example/cluster-wide) for Vault
-* Set up [Vault](/example/vault-namespace) in a new dedicated namespace
+* Setup necessary [cluster wide permissions](/example/cluster-wide) for Vault,
+  if creating in a fresh cluster, or alternatively add your Vault's SA to the
+  existing binding
+* Set up [Vault server](/example/vault-namespace) in a new, dedicated namespace
 
 ### Creating resources needed to configure Vault
 We need to create some resources on kubernetes and on the cloud provider (AWS or

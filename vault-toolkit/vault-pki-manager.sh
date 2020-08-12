@@ -17,16 +17,33 @@ output_dir="./pki"
 rm -rf "${output_dir}"
 mkdir "${output_dir}"
 
-# Updating CA in case there are new namespaces
-if [[ -f /etc/tls/ca.crt ]] && [[ -n "${VAULT_CLIENT_NAMESPACES}" ]]; then
+# update_client_namespaces copies ca.crt into a configmap in every namespace in
+# the cluster. The list of namespaces can be constrained by setting a
+# space-delimited list in VAULT_CLIENT_NAMESPACES.
+#
+# This function is ran when the certificate is rotated and subsequently every 25
+# minutes to ensure new namespaces receive the certificate after a reasonable
+# amount of time.
+update_client_namespaces() {
+    vault_namespaces="${VAULT_CLIENT_NAMESPACES:-""}"
+
+    if [[ -z "${vault_namespaces}" ]]; then
+        vault_namespaces=$(kubectl get ns -o name \
+          | sed 's|namespace/||g' \
+          | xargs
+        )
+    fi
+
     echo "Updating CA in client namespaces"
-    for n in ${VAULT_CLIENT_NAMESPACES}; do
+    for n in $vault_namespaces; do
         echo "Updating configmap in ${n}"
         kubectl -n "${n}" create configmap "${secret_name}" \
-            --from-file /etc/tls/ca.crt \
-            --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
+            --from-file /etc/tls/ca.crt 2>/dev/null \
+            || kubectl -n "${n}" create configmap "${secret_name}" \
+                --from-file /etc/tls/ca.crt \
+                --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
     done
-fi
+}
 
 # Main loop
 while true; do
@@ -37,6 +54,7 @@ while true; do
         expiration_seconds=$(date -d "${cert_expiration}" +%s)
         validity=$((expiration_seconds - now_seconds))
         if [[ ${validity} -gt 7200 ]]; then # 2h
+            update_client_namespaces
             sleep 1500 # 25 min
             continue
         fi
@@ -120,25 +138,8 @@ while true; do
         exit 1
     fi
 
-    if [[ -n "${VAULT_CLIENT_NAMESPACES}" ]]; then
-        echo "Updating CA in client namespaces"
-        errors="false"
-        for n in ${VAULT_CLIENT_NAMESPACES}; do
-            echo "Updating configmap in ${n}"
-            kubectl -n "${n}" create configmap "${secret_name}" \
-                --from-file "${output_dir}"/ca.crt \
-                --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
-            exit_code=$?
-            if [ "${exit_code}" != "0" ]; then
-                echo "Error: couldn't update configmap in ${n}"
-                errors="true"
-            fi
-        done
-    fi
-    if [ "${errors}" = "true" ]; then
-        echo "Error: couldn't update configmap on one or more namespaces, exiting"
-        exit 1
-    fi
+    # Copy the new ca.crt to the client namespaces
+    update_client_namespaces
 
     echo "Rotated successfully on $(date -I'seconds')"
     sleep 1500 # 25 min

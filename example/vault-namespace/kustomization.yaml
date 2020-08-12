@@ -3,7 +3,5 @@ kind: Kustomization
 bases:
   - ../../base/vault-namespace
   # github.com/utilitywarehouse/vault-manifests//base/vault-namespace?ref=1.5.0-1
-patchesStrategicMerge:
-  - vault-pki-patch.yaml
 resources:
   - rbac.yaml

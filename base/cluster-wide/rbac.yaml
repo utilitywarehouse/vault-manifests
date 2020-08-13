@@ -7,7 +7,7 @@ metadata:
   name: vault
 spec:
   allowedCapabilities:
-  - SYS_PTRACE
+    - SYS_PTRACE
   seLinux:
     rule: RunAsAny
   supplementalGroups:
@@ -18,20 +18,35 @@ spec:
     rule: RunAsAny
   # Allow same volumes as the default policy
   volumes:
-    - 'configMap'
-    - 'emptyDir'
-    - 'projected'
-    - 'secret'
-    - 'downwardAPI'
-    - 'persistentVolumeClaim'
+    - "configMap"
+    - "emptyDir"
+    - "projected"
+    - "secret"
+    - "downwardAPI"
+    - "persistentVolumeClaim"
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: vault
 rules:
-  - apiGroups: ['policy']
-    resources: ['podsecuritypolicies']
-    verbs:     ['use']
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
     resourceNames:
-    - vault
+      - vault
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-pki
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - "create"
+      - "get"
+      - "patch"
+      - "update"

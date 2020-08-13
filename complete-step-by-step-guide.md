@@ -23,8 +23,6 @@ Table of Contents
          * [Deploy terraform applier](#deploy-terraform-applier)
          * [Setup alerts](#setup-alerts)
       * [Configuring a new app to get aws credentials from Vault](#configuring-a-new-app-to-get-aws-credentials-from-vault)
-         * [Prepare the client namespace](#prepare-the-client-namespace)
-         * [Enable the new namespace](#enable-the-new-namespace)
          * [Configure Vault to grant a SA access to cloud resources](#configure-vault-to-grant-a-sa-access-to-cloud-resources)
             * [AWS](#aws-1)
             * [GCP](#gcp-1)
@@ -126,15 +124,6 @@ for an explanation.
 * Setup prometheus alerts like this [Vault](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-prom/resources/prometheus-alerts.yaml) group
 
 ## Configuring a new app to get aws credentials from Vault
-
-### Prepare the client namespace
-Create vault-tls configmap and allow vault-pki to edit
-configmaps in the client namespace ([example](/example/client-namespace))
-
-### Enable the new namespace
-* Add the application's namespace to the `VAULT_CLIENT_NAMESPACES` list in
-  Vault's PKI manager ([example](https://github.com/utilitywarehouse/kubernetes-manifests/blob/master/exp-1-aws/sys-vault/vault-pki-patch.yaml))
-* Adjust network policies to allow the new application to talk to Vault's
 
 ### Configure Vault to grant a SA access to cloud resources
 

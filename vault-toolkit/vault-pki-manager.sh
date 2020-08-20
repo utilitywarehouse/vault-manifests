@@ -26,6 +26,7 @@ mkdir "${output_dir}"
 # amount of time.
 update_client_namespaces() {
     vault_namespaces="${VAULT_CLIENT_NAMESPACES:-""}"
+    ca_crt="${1}"
 
     if [[ -z "${vault_namespaces}" ]]; then
         vault_namespaces=$(kubectl get ns -o name \
@@ -38,9 +39,9 @@ update_client_namespaces() {
     for n in $vault_namespaces; do
         echo "Updating configmap in ${n}"
         kubectl -n "${n}" create configmap "${secret_name}" \
-            --from-file /etc/tls/ca.crt 2>/dev/null \
+            --from-file "${ca_crt}" 2>/dev/null \
             || kubectl -n "${n}" create configmap "${secret_name}" \
-                --from-file /etc/tls/ca.crt \
+                --from-file "${ca_crt}" \
                 --dry-run=client -o yaml | kubectl -n "${n}" replace -f -
     done
 }
@@ -54,7 +55,7 @@ while true; do
         expiration_seconds=$(date -d "${cert_expiration}" +%s)
         validity=$((expiration_seconds - now_seconds))
         if [[ ${validity} -gt 7200 ]]; then # 2h
-            update_client_namespaces
+            update_client_namespaces "/etc/tls/ca.crt"
             sleep 1500 # 25 min
             continue
         fi
@@ -139,7 +140,7 @@ while true; do
     fi
 
     # Copy the new ca.crt to the client namespaces
-    update_client_namespaces
+    update_client_namespaces "${output_dir}"/ca.crt
 
     echo "Rotated successfully on $(date -I'seconds')"
     sleep 1500 # 25 min

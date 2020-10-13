@@ -50,3 +50,9 @@ rules:
       - "get"
       - "patch"
       - "update"
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - "list"

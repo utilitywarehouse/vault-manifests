@@ -26,3 +26,10 @@ mappings:
     timer_type: histogram
     labels:
       method: "$1"
+  # vault_raft_leader_lastContact is a summary
+  # (https://prometheus.io/docs/concepts/metric_types/#summary) and has a default
+  # sliding window of 10m. This is not useful when we have short, sharp spikes.
+  # Changing the window to 30sec will more accurately show these spikes.
+  - match: vault.raft.leader.lastContact
+    summary_options:
+      max_summary_age: 30s

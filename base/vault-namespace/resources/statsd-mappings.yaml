@@ -31,5 +31,6 @@ mappings:
   # sliding window of 10m. This is not useful when we have short, sharp spikes.
   # Changing the window to 30sec will more accurately show these spikes.
   - match: vault.raft.leader.lastContact
+    name: "vault_raft_leader_lastContact"
     summary_options:
       max_summary_age: 30s

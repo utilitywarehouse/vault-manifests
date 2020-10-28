@@ -32,6 +32,7 @@ mappings:
   # Changing the window to 30sec will more accurately show these spikes.
   - match: vault.raft.leader.lastContact
     name: "vault_raft_leader_lastContact"
+    observer_type: summary
     summary_options:
       max_summary_age: 30s
       # With only one age bucket, you will

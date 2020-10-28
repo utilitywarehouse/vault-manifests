@@ -34,3 +34,7 @@ mappings:
     name: "vault_raft_leader_lastContact"
     summary_options:
       max_summary_age: 30s
+      # With only one age bucket, you will
+      # effectively see a complete reset of the summary each time MaxAge has
+      # passed.
+      summary_age_buckets: 1

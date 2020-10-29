@@ -20,8 +20,9 @@ mappings:
     timer_type: histogram
     labels:
       method: "$1"
-  # vault.raft.storage.get -> vault_raft_storage{method="get"}
-  - match: vault.raft.storage.*
+  # vault.raft-storage.get -> vault_raft_storage{method="get"}
+  - match: vault\.raft-storage\.(delete|get|list|put|transaction)
+    match_type: regex
     name: "vault_raft_storage"
     timer_type: histogram
     labels:

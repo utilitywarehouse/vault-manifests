@@ -210,7 +210,7 @@ spec:
             runAsGroup: 100
             allowPrivilegeEscalation: false
         - name: vault-exporter
-          image: quay.io/giantswarm/vault-exporter:1.0.0
+          image: quay.io/giantswarm/vault-exporter:2.0.0
           args:
             - --insecure-ssl
           ports:

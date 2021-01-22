@@ -75,6 +75,16 @@ spec:
     - port: 9410
       name: vault-exporter
 ---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: vault
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vault
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

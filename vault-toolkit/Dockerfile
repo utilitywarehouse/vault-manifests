@@ -1,7 +1,7 @@
 FROM alpine:3.12
 
 ENV CFSSL_VERSION="1.5.0"
-ENV KUBECTL_VERSION="1.19.2"
+ENV KUBECTL_VERSION="1.20.2"
 
 COPY *.sh /usr/local/bin/
 

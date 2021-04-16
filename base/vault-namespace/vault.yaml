@@ -75,7 +75,7 @@ spec:
     - port: 9410
       name: vault-exporter
 ---
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: vault
@@ -112,7 +112,7 @@ spec:
                       operator: In
                       values:
                         - vault
-                topologyKey: failure-domain.beta.kubernetes.io/zone
+                topologyKey: topology.kubernetes.io/zone
               weight: 100
       initContainers:
         # Write vault config to file

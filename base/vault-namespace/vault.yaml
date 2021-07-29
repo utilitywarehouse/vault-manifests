@@ -207,6 +207,13 @@ spec:
           ports:
             - containerPort: 8200
             - containerPort: 8201
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+            requests:
+              cpu: 0m
+              memory: 48Mi
           volumeMounts:
             - name: vault-config
               mountPath: /vault/config

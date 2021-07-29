@@ -32,6 +32,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+            requests:
+              cpu: 0m
+              memory: 20Mi
           volumeMounts:
             - name: tls
               mountPath: /etc/tls

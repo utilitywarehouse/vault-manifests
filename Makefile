@@ -1,12 +1,9 @@
 SHELL := /bin/bash
 
-# Hack to take arguments from command line
-# Usage: `make release 1.3.2-1`
-# https://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
 release:
-	@find . -type f \
-	\( -name README.md -o -name kustomization.yaml \) \
-	-exec sed -ri 's#[0-9]+\.[0-9]+\.[0-9]+-[0-9]+#$(filter-out $@,$(MAKECMDGOALS))#g' {} \;
-
-%:		# matches any task name
-	@:	# empty recipe = do nothing
+	@sd "newTag: master" "newTag: $(VERSION)" base/vault-namespace/kustomization.yaml
+	@git add -- base/vault-namespace/kustomization.yaml
+	@git commit -m "Release $(VERSION)"
+	@sd "newTag: $(VERSION)" "newTag: master" base/vault-namespace/kustomization.yaml
+	@git add -- base/vault-namespace/kustomization.yaml
+	@git commit -m "Clean up release $(VERSION)"

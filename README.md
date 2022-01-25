@@ -13,6 +13,7 @@
 * [Examples](#examples)
 * [Requires](#requires)
 * [Step by step guide of a complete system](#step-by-step-guide-of-a-complete-system)
+* [Release process](#release-process)
 
 <!-- vim-markdown-toc -->
 
@@ -168,3 +169,9 @@ way for applications to access cloud resources.
 
 [Here](complete-step-by-step-guide.md) is a complete step by step guide to easily
 provide a kubernetes application access to an aws bucket.
+
+## Release process
+* Set the version number (upstream + our revision) `export VERSION=v0.0.0-1`
+* Run the release target `make release`
+* Push the release commits and the tag `git push origin --tags`
+* Create a github release from the release tag

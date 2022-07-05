@@ -164,7 +164,9 @@ spec:
                   pod_name  = "$(POD_NAME)"
                 }
 
-                max_lease_ttl = "168h"
+                max_lease_ttl     = "168h"
+                default_lease_ttl = "168h"
+
                 api_addr      = "https://$(POD_NAME).vault.$(POD_NAMESPACE):8200"
                 cluster_addr  = "https://$(POD_NAME).vault-cluster.$(POD_NAMESPACE):8201"
                 disable_mlock = true

@@ -242,7 +242,7 @@ spec:
           ports:
             - containerPort: 9410
         - name: statsd-exporter
-          image: prom/statsd-exporter:v0.22.7
+          image: prom/statsd-exporter:v0.23.1
           args:
             - --statsd.mapping-config=/statsd-mappings.yaml
           ports:

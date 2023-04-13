@@ -198,7 +198,7 @@ spec:
             - name: tls
               mountPath: /etc/tls
         - name: vault
-          image: vault:1.13.1
+          image: vault:1.11.2
           readinessProbe:
             # Ready if Vault is initialized, unsealed and active/standby
             httpGet:
@@ -236,13 +236,13 @@ spec:
             runAsGroup: 100
             allowPrivilegeEscalation: false
         - name: vault-exporter
-          image: quay.io/giantswarm/vault-exporter:2.3.0-5aa037b5d4ca7137c4a6091a5ed75e7a23afbc0d
+          image: quay.io/giantswarm/vault-exporter:2.2.1
           args:
             - --insecure-ssl
           ports:
             - containerPort: 9410
         - name: statsd-exporter
-          image: prom/statsd-exporter:v0.23.1
+          image: prom/statsd-exporter:v0.22.7
           args:
             - --statsd.mapping-config=/statsd-mappings.yaml
           ports:

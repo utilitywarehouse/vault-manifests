@@ -1,0 +1,53 @@
+# vault-ca-cert-server is used to distribute frequently rotating vault CA cert
+piVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: vault-ca-cert
+  name: vault-ca-cert
+spec:
+  selector:
+    app: vault-ca-cert-server
+  ports:
+    - name: http-file-serve
+      port: 8100
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-ca-cert-server
+  labels:
+    app: vault-ca-cert-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-ca-cert-server
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8100"
+      labels:
+        app: vault-ca-cert-server
+    spec:
+      containers:
+        - name: vault-ca-cert-server
+          image: quay.io/utilitywarehouse/kube-ca-cert-server:v0.0.4
+          args:
+            - "-p=8100"
+            - "-f=/etc/tls/ca.crt"
+          ports:
+            - name: http-file-serve
+              containerPort: 8100
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /etc/tls
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+            defaultMode: 0400
+            items:
+              - key: ca.crt
+                path: ca.crt

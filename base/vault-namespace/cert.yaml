@@ -30,6 +30,8 @@ spec:
   usages:
     - server auth
     - client auth
+  ipAddresses:
+    - 127.0.0.1 # required by vault initializer
   dnsNames:
     - vault
     - vault-0.vault

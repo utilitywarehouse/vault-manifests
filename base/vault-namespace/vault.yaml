@@ -171,6 +171,20 @@ spec:
             - name: vault-config
               mountPath: /vault/config
       containers:
+        - name: pki-initializer
+          image: quay.io/utilitywarehouse/vault-toolkit
+          args:
+            - pki-initializer
+          env:
+            - name: VAULT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: VAULT_CACERT
+              value: "/etc/tls/ca.crt"
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
         - name: initializer
           image: quay.io/utilitywarehouse/vault-toolkit
           args:

@@ -86,23 +86,11 @@ systems.
 Vault uses TLS with a self-signed certificate. Clients communicating
 with Vault need to hold the corresponding self-signed CA certificate.
 
-A deployment called [`vault-pki-manager`](base/vault-namespace/vault-pki.yaml)
-performs the following functions:
+In this deployment `cert-manager` is used to generate certificate using self 
+signed issuer. [resources](base/vault-namespace/cert.yaml)
 
-- Generates/rotates the CA certificate, private key and server certificate every
-  24 hours
-  - This frequent rotation mitigates the risk of the private key being
-    compromised without our knowledge. The threat scenario being that a
-    malicious actor could perpetrate a MITM attack.
-  - There is a sidecar on the Vault server pods called `reloader` which reloads
-    Vault to pick up the new certificates when they change on disk.
-- Ensures the CA certificate is copied into a `ConfigMap` called `vault-tls` in
-  every namespace in the cluster
-  - This allows the CA cert to be mounted into containers which communicate with
-    Vault
-  - The base provides a
-    [`ClusterRole`](https://github.com/utilitywarehouse/vault-manifests/blob/master/base/cluster-wide/rbac.yaml)
-    that allows `vault-pki-manager` to write `ConfigMaps` cluster wide
+This CA certificate is made available via http endpoint using [vault-ca-cert](base/vault-namespace/ca-server.yaml) deployment. Since cert is rotated every 24h
+clients are expected to fetch new cert before starting communication with vault.
 
 ### Prometheus metrics
 

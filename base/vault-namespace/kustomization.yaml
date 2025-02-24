@@ -11,4 +11,4 @@ configMapGenerator:
       - resources/statsd-mappings.yaml
 images:
   - name: quay.io/utilitywarehouse/vault-toolkit
-    newTag: master
+    newTag: v1.18.2-4

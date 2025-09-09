@@ -40,40 +40,40 @@ spec:
       name: public-api
     - port: 8201
       name: members-internal-api
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vault-statsd-exporter
-  labels:
-    app: vault
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9102"
-spec:
-  selector:
-    app: vault
-  ports:
-    - port: 9102
-      name: statsd-exporter
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vault-exporter
-  labels:
-    app: vault
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9410"
-spec:
-  selector:
-    app: vault
-  ports:
-    - port: 9410
-      name: vault-exporter
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: vault-statsd-exporter
+#   labels:
+#     app: vault
+#   annotations:
+#     prometheus.io/scrape: "true"
+#     prometheus.io/path: /metrics
+#     prometheus.io/port: "9102"
+# spec:
+#   selector:
+#     app: vault
+#   ports:
+#     - port: 9102
+#       name: statsd-exporter
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: vault-exporter
+#   labels:
+#     app: vault
+#   annotations:
+#     prometheus.io/scrape: "true"
+#     prometheus.io/path: /metrics
+#     prometheus.io/port: "9410"
+# spec:
+#   selector:
+#     app: vault
+#   ports:
+#     - port: 9410
+#       name: vault-exporter
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -147,6 +147,9 @@ spec:
                   cluster_address = "0.0.0.0:8201"
                   tls_key_file    = "/etc/tls/tls.key"
                   tls_cert_file   = "/etc/tls/tls.crt"
+                  telemetry {
+                    unauthenticated_metrics_access = true
+                  }
                 }
 
                 storage "raft" {
@@ -177,7 +180,7 @@ spec:
             - initializer
           env:
             - name: VAULT_CACERT
-              value: "/etc/tls/ca.crt"
+              value: /etc/tls/ca.crt
           volumeMounts:
             - name: tls
               mountPath: /etc/tls
@@ -187,7 +190,7 @@ spec:
             - unsealer
           env:
             - name: VAULT_CACERT
-              value: "/etc/tls/ca.crt"
+              value: /etc/tls/ca.crt
             - name: UNSEAL_KEY
               valueFrom:
                 secretKeyRef:
@@ -235,23 +238,23 @@ spec:
             runAsUser: 1000
             runAsGroup: 100
             allowPrivilegeEscalation: false
-        - name: vault-exporter
-          image: quay.io/giantswarm/vault-exporter:2.5.0
-          args:
-            - --insecure-ssl
-          ports:
-            - containerPort: 9410
-        - name: statsd-exporter
-          image: prom/statsd-exporter:v0.28.0
-          args:
-            - --statsd.mapping-config=/statsd-mappings.yaml
-          ports:
-            - containerPort: 9125
-            - containerPort: 9102
-          volumeMounts:
-            - name: statsd-mappings
-              mountPath: /statsd-mappings.yaml
-              subPath: statsd-mappings.yaml
+        # - name: vault-exporter
+        #   image: quay.io/giantswarm/vault-exporter:2.5.0
+        #   args:
+        #     - --insecure-ssl
+        #   ports:
+        #     - containerPort: 9410
+        # - name: statsd-exporter
+        #   image: prom/statsd-exporter:v0.28.0
+        #   args:
+        #     - --statsd.mapping-config=/statsd-mappings.yaml
+        #   ports:
+        #     - containerPort: 9125
+        #     - containerPort: 9102
+        #   volumeMounts:
+        #     - name: statsd-mappings
+        #       mountPath: /statsd-mappings.yaml
+        #       subPath: statsd-mappings.yaml
         - name: reloader
           image: alpine
           securityContext:

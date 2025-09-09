@@ -99,6 +99,10 @@ spec:
     metadata:
       labels:
         app: vault
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /v1/sys/metrics?format=prometheus
+        prometheus.io/port: "8200"
     spec:
       serviceAccountName: vault
       shareProcessNamespace: true

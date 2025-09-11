@@ -22,7 +22,7 @@ spec:
               DEST="/vault/plugins/vault-plugin-secrets-github"
 
               curl -Ls "https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${VERSION}/vault-plugin-secrets-github-linux-amd64" \
-                > ${DEST} \
+                > ${DEST}
               chmod +x "${DEST}"
 
               SHA256_HASH=$(sha256sum "${DEST}" | cut -d ' ' -f 1)

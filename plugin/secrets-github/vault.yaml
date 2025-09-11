@@ -8,6 +8,7 @@ spec:
       initContainers:
         - name: plugin-installer
           image: alpine
+          restartPolicy: Always
           command:
             - /bin/sh
             - -c

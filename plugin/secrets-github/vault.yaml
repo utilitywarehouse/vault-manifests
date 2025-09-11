@@ -14,7 +14,7 @@ spec:
             - -c
             - |
               apk update
-              apk add --no-cache wget unzip
+              apk add --no-cache curl
 
               cd /tmp
 

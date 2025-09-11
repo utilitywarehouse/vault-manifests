@@ -27,7 +27,6 @@ spec:
 
               SHA256_HASH=$(sha256sum "${DEST}" | cut -d ' ' -f 1)
               echo "The SHA256 hash of ${DEST} is: ${SHA256_HASH}"
-              sleep inf
           volumeMounts:
             - name: plugins
               mountPath: /vault/plugins

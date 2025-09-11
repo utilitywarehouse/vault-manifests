@@ -101,10 +101,8 @@ spec:
         app: vault
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/path: /v1/sys/metrics
         prometheus.io/scheme: https
-        # prometheus.io/param_format: prometheus
-        # prometheus.io/path: /v1/sys/metrics?format=prometheus
+        prometheus.io/path: /v1/sys/metrics
         prometheus.io/port: "8200"
     spec:
       serviceAccountName: vault
@@ -166,7 +164,6 @@ spec:
 
                 telemetry {
                   disable_hostname = true
-                  statsd_address = "localhost:9125"
                 }
 
                 service_registration "kubernetes" {

@@ -9,7 +9,7 @@ spec:
         - name: plugin-installer
           image: alpine
           command:
-            - /bin/bash
+            - /bin/sh
             - -c
             - |
               apk update

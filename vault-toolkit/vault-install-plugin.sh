@@ -19,6 +19,8 @@ done
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
 
+sleep inf
+
 # add plugin to the catalog
 curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}v1/sys/plugins/catalog/secret/github" \
   --request POST                            \

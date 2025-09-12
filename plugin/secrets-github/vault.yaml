@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     spec:
-      initContainers:
+      containers:
         - name: plugin-installer
           image: alpine
           command:
@@ -29,11 +29,3 @@ spec:
           volumeMounts:
             - name: plugins
               mountPath: /vault/plugins
-      containers:
-        - name: vault
-          volumeMounts:
-            - name: plugins
-              mountPath: /vault/plugins
-      volumes:
-        - name: plugins
-          emptyDir: {}

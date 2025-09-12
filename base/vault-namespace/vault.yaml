@@ -232,6 +232,8 @@ spec:
               mountPath: /vault/storage
             - name: tls
               mountPath: /etc/tls
+            - name: plugins
+              mountPath: /vault/plugins
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -275,6 +277,8 @@ spec:
       securityContext:
         fsGroup: 1000
       volumes:
+        - name: plugins
+          emptyDir: {}
         - name: tls
           secret:
             secretName: vault-tls

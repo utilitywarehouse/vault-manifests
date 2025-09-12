@@ -9,7 +9,7 @@ ENV SECRETS_GH_PLUGIN_SHA="598c7b0b911c524840199abdaaea1c7b3aaed918a50662ce8ea30
 
 COPY *.sh /usr/local/bin/
 
-RUN apk --no-cache add curl jq bash gpg \
+RUN apk --no-cache add curl jq bash \
       && wget -O /usr/local/bin/kubectl https://dl.k8s.io/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
       && chmod +x /usr/local/bin/kubectl \
       && wget -O /usr/local/bin/cfssl https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_amd64 \

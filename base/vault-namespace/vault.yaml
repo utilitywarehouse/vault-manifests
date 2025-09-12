@@ -40,40 +40,6 @@ spec:
       name: public-api
     - port: 8201
       name: members-internal-api
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: vault-statsd-exporter
-#   labels:
-#     app: vault
-#   annotations:
-#     prometheus.io/scrape: "true"
-#     prometheus.io/path: /metrics
-#     prometheus.io/port: "9102"
-# spec:
-#   selector:
-#     app: vault
-#   ports:
-#     - port: 9102
-#       name: statsd-exporter
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: vault-exporter
-#   labels:
-#     app: vault
-#   annotations:
-#     prometheus.io/scrape: "true"
-#     prometheus.io/path: /metrics
-#     prometheus.io/port: "9410"
-# spec:
-#   selector:
-#     app: vault
-#   ports:
-#     - port: 9410
-#       name: vault-exporter
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -242,23 +208,6 @@ spec:
             runAsUser: 1000
             runAsGroup: 100
             allowPrivilegeEscalation: false
-        # - name: vault-exporter
-        #   image: quay.io/giantswarm/vault-exporter:2.5.0
-        #   args:
-        #     - --insecure-ssl
-        #   ports:
-        #     - containerPort: 9410
-        # - name: statsd-exporter
-        #   image: prom/statsd-exporter:v0.28.0
-        #   args:
-        #     - --statsd.mapping-config=/statsd-mappings.yaml
-        #   ports:
-        #     - containerPort: 9125
-        #     - containerPort: 9102
-        #   volumeMounts:
-        #     - name: statsd-mappings
-        #       mountPath: /statsd-mappings.yaml
-        #       subPath: statsd-mappings.yaml
         - name: reloader
           image: alpine
           securityContext:

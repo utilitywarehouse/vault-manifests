@@ -22,7 +22,7 @@ fi
 
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
-
+ls -al /vault/plugins/
 
 # VAULT_TOKEN is required to register plugin binary
 until [ -n "$VAULT_TOKEN" ]; do

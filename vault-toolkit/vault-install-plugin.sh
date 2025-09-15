@@ -32,6 +32,8 @@ done
 
 echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"
 
+sleep inf
+
 # add plugin to the catalog
 # SECRETS_GH_PLUGIN_VERSION and SECRETS_GH_PLUGIN_SHA env value comes from image 
 # which is added at build time 

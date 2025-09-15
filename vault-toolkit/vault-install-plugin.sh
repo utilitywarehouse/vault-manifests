@@ -22,16 +22,8 @@ fi
 
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
-
 echo "sha256sum: $(sha256sum /vault/plugins/vault-plugin-secrets-github)"
-
-sleep 1
-
-# VAULT_TOKEN is required to register plugin binary
-until [ -n "$VAULT_TOKEN" ]; do
-    echo "VAULT_TOKEN to be set, going to sleep"
-    sleep 3
-done
+sleep 1 # needed for vault sidecar to detect new file
 
 # SECRETS_GH_PLUGIN_VERSION and SECRETS_GH_PLUGIN_SHA env value comes from image 
 # which is added at build time 

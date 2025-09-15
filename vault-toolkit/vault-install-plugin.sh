@@ -2,7 +2,6 @@
 
 # This script registers installed vault-plugin-secrets-github plugin.
 
-set -o nounset
 set -o errexit
 set -o pipefail
 

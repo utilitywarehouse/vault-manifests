@@ -35,7 +35,7 @@ echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha
 # add plugin to the catalog
 # SECRETS_GH_PLUGIN_VERSION and SECRETS_GH_PLUGIN_SHA env value comes from image 
 # which is added at build time 
-curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/catalog/secret/github" \
+curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/catalog/secret/github" \
   --request POST                            \
   --header "X-Vault-Token: ${VAULT_TOKEN}"  \
   --data '{

@@ -13,6 +13,12 @@ spec:
           env:
             - name: VAULT_CACERT
               value: "/etc/tls/ca.crt"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault
+                  key: root-token
+                  optional: true # do not block fresh vault start
           volumeMounts:
             - name: plugins
               mountPath: /vault/plugins

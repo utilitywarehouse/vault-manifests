@@ -2,6 +2,7 @@
 
 # This script registers installed vault-plugin-secrets-github plugin.
 
+set -o nounset
 set -o errexit
 set -o pipefail
 
@@ -17,6 +18,11 @@ done
 
 if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
   echo "vault is not initialized, going to sleep";
+  sleep 3
+fi
+
+if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
+  echo "sealed vault detected, going to sleep";
   sleep 3
 fi
 

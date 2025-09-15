@@ -3,7 +3,8 @@ FROM alpine:3.18
 ENV CFSSL_VERSION="1.6.4"
 ENV KUBECTL_VERSION="1.28.4"
 
-# following envs also used by script
+# following envs are set via make target 'update-secrets-github-plugin'
+# its also used by 'vault-install-plugin.sh' script
 ENV SECRETS_GH_PLUGIN_VERSION="2.2.2"
 ENV SECRETS_GH_PLUGIN_SHA="46056e4ce06961e4c87d30da0ed18422e69b680755f330cd2a78eac1749192b7"
 

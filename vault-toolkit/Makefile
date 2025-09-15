@@ -1,4 +1,3 @@
-SHELL := /bin/bash
 SECRETS_GH_PLUGIN_VERSION=2.2.2
 
 secrets_github_gpg_pub := "./plugin-secrets-github/martinbaillie.gpg"

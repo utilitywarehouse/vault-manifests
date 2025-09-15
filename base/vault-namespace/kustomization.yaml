@@ -5,10 +5,6 @@ resources:
   - cert.yaml
   - rbac.yaml
   - vault.yaml
-configMapGenerator:
-  - name: statsd-mappings
-    files:
-      - resources/statsd-mappings.yaml
 images:
   - name: quay.io/utilitywarehouse/vault-toolkit
     newTag: master

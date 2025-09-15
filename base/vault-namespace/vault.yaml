@@ -235,9 +235,6 @@ spec:
             defaultMode: 0400
         - name: vault-config
           emptyDir: {}
-        - name: statsd-mappings
-          configMap:
-            name: statsd-mappings
   volumeClaimTemplates:
     - metadata:
         name: storage

@@ -17,6 +17,7 @@ done
 
 if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
   echo "vault is not initialized, going to sleep";
+  sleep 3
 fi
 
 # move plugin binary to plugin directory 

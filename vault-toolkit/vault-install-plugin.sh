@@ -31,7 +31,7 @@ until [ -n "$VAULT_TOKEN" ]; do
     sleep 3
 done
 
-echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VE} sha256: ${SECRETS_GH_PLUGIN_SHA}"
+echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"
 
 # add plugin to the catalog
 # SECRETS_GH_PLUGIN_VERSION and SECRETS_GH_PLUGIN_SHA env value comes from image 
@@ -45,4 +45,4 @@ curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/catalog/sec
     "version": "'"${SECRETS_GH_PLUGIN_VERSION}"'"
   }'
  
-echo "registered secret github plugin version: ${SECRETS_GH_PLUGIN_VE} sha256: ${SECRETS_GH_PLUGIN_SHA}"
+echo "registered secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"

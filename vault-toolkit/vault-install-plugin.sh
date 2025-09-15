@@ -17,7 +17,6 @@ done
 
 if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
   echo "vault is not initialized, going to sleep";
-  while true; do sleep 86400; done
 fi
 
 # move plugin binary to plugin directory 
@@ -47,6 +46,6 @@ curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugi
     "version": "'"${SECRETS_GH_PLUGIN_VERSION}"'"
   }'
  
-echo "registered secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"
+echo "registered secret github plugin"
 
 sleep inf

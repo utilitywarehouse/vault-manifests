@@ -33,11 +33,10 @@ until [ -n "$VAULT_TOKEN" ]; do
     sleep 3
 done
 
-echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"
-
-# add plugin to the catalog
 # SECRETS_GH_PLUGIN_VERSION and SECRETS_GH_PLUGIN_SHA env value comes from image 
 # which is added at build time 
+echo "registering secret github plugin version: ${SECRETS_GH_PLUGIN_VERSION} sha256: ${SECRETS_GH_PLUGIN_SHA}"
+
 curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/catalog/secret/github" \
   --request POST                            \
   --header "X-Vault-Token: ${VAULT_TOKEN}"  \
@@ -46,6 +45,13 @@ curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugi
     "sha256": "'"${SECRETS_GH_PLUGIN_SHA}"'",
     "version": "'"${SECRETS_GH_PLUGIN_VERSION}"'"
   }'
+
+echo "pining the new secret github plugin version for the current cluster"
+
+curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/pins/secret/github" \
+  --request POST                            \
+  --header "X-Vault-Token: ${VAULT_TOKEN}"  \
+  --data '{"version":"'"${SECRETS_GH_PLUGIN_VERSION}"'"}'
  
 echo "reloading secret github plugin"
 

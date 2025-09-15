@@ -8,6 +8,7 @@ spec:
       containers:
         - name: plugin-installer
           image: quay.io/utilitywarehouse/vault-toolkit
+          imagePullPolicy: Always
           args:
             - install-plugin
           env:

@@ -51,10 +51,10 @@ curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugi
   --header "X-Vault-Token: ${VAULT_TOKEN}"  \
   --data '{"version":"'"${SECRETS_GH_PLUGIN_VERSION}"'"}'
  
-echo "reloading secret github plugin"
-
-curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/reload/secret/github" \
-  --request POST                            \
-  --header "X-Vault-Token: ${VAULT_TOKEN}"
+# echo "reloading secret github plugin"
+# # Do we need this??
+# curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/reload/secret/github" \
+#   --request POST                            \
+#   --header "X-Vault-Token: ${VAULT_TOKEN}"
 
 sleep inf

@@ -5,8 +5,8 @@ ENV KUBECTL_VERSION="1.28.4"
 
 # following envs are set via make target 'update-secrets-github-plugin'
 # its also used by 'vault-install-plugin.sh' script
-ENV SECRETS_GH_PLUGIN_VERSION="2.3.0"
-ENV SECRETS_GH_PLUGIN_SHA="598c7b0b911c524840199abdaaea1c7b3aaed918a50662ce8ea30aaeeae271ce"
+ENV SEC_GITHUB_PLUGIN_VERSION="2.3.0"
+ENV SEC_GITHUB_PLUGIN_SHA="598c7b0b911c524840199abdaaea1c7b3aaed918a50662ce8ea30aaeeae271ce"
 
 COPY *.sh /usr/local/bin/
 
@@ -17,7 +17,7 @@ RUN apk --no-cache add curl jq bash \
       && chmod +x /usr/local/bin/cfssl \
       && wget -O /usr/local/bin/cfssljson https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_linux_amd64 \
       && chmod +x /usr/local/bin/cfssljson \
-      && wget -O /usr/local/bin/vault-plugin-secrets-github https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SECRETS_GH_PLUGIN_VERSION}/vault-plugin-secrets-github-linux-amd64 \
+      && wget -O /usr/local/bin/vault-plugin-secrets-github https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SEC_GITHUB_PLUGIN_VERSION}/vault-plugin-secrets-github-linux-amd64 \
       && chmod +x /usr/local/bin/vault-plugin-secrets-github \
       && chmod +x /usr/local/bin/*.sh
 

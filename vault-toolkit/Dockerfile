@@ -5,8 +5,8 @@ ENV KUBECTL_VERSION="1.28.4"
 
 # following envs are set via make target 'update-secrets-github-plugin'
 # its also used by 'vault-install-plugin.sh' script
-ENV SECRETS_GH_PLUGIN_VERSION="2.2.2"
-ENV SECRETS_GH_PLUGIN_SHA="46056e4ce06961e4c87d30da0ed18422e69b680755f330cd2a78eac1749192b7"
+ENV SECRETS_GH_PLUGIN_VERSION="2.3.0"
+ENV SECRETS_GH_PLUGIN_SHA="598c7b0b911c524840199abdaaea1c7b3aaed918a50662ce8ea30aaeeae271ce"
 
 COPY *.sh /usr/local/bin/
 

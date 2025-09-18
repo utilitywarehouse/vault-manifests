@@ -1,4 +1,4 @@
-SECRETS_GH_PLUGIN_VERSION=2.2.2
+SECRETS_GH_PLUGIN_VERSION=2.3.0
 
 secrets_github_gpg_pub := "./plugin-secrets-github/martinbaillie.gpg"
 secrets_github_sig := "./plugin-secrets-github/SHA256SUMS.sig"

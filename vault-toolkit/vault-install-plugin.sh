@@ -16,12 +16,12 @@ until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e
   sleep 3
 done
 
-until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true' >/dev/null 2>&1; do
   echo "vault is not initialized, going to sleep";
   sleep 3
 done
 
-until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == false' >/dev/null 2>&1; do
   echo "sealed vault detected, going to sleep";
   sleep 3
 done

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+spec:
+  template:
+    spec:
+      containers:
+        - name: plugin-installer
+          image: quay.io/utilitywarehouse/vault-toolkit
+          imagePullPolicy: Always
+          args:
+            - install-plugin
+          env:
+            - name: VAULT_CACERT
+              value: "/etc/tls/ca.crt"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault
+                  key: root-token
+                  optional: true # do not block fresh vault start
+          volumeMounts:
+            - name: plugins
+              mountPath: /vault/plugins
+            - name: tls
+              mountPath: /etc/tls

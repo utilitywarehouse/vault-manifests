@@ -16,15 +16,15 @@ until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e
   sleep 3
 done
 
-if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
   echo "vault is not initialized, going to sleep";
   sleep 3
-fi
+done
 
-if curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
   echo "sealed vault detected, going to sleep";
   sleep 3
-fi
+done
 
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
@@ -42,7 +42,7 @@ curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugi
     "version": "'"${SEC_GITHUB_PLUGIN_VERSION}"'"
   }'
 
-echo "pining the new secret github plugin version for the current cluster"
+echo "pinning the new secret github plugin version for the current cluster"
 
 curl -Ss --fail-with-body --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/plugins/pins/secret/github" \
   --request POST                            \

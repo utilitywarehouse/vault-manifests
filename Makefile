@@ -3,8 +3,8 @@ SHELL := /bin/bash
 SEC_GITHUB_PLUGIN_VERSION=2.3.0
 
 TMPDIR := $(shell mktemp -d)
-secrets_github_sig := "${TMPDIR}/plugin-secrets-github/SHA256SUMS.sig"
-secrets_github_sums := "${TMPDIR}/plugin-secrets-github/SHA256SUMS"
+secrets_github_sig := "${TMPDIR}/SHA256SUMS.sig"
+secrets_github_sums := "${TMPDIR}/SHA256SUMS"
 
 # update-secrets-github-plugin will download SHA256SUMS and sig files for given version
 # verify its signature and then parse SUM file to extract plugin binary's SHA256
@@ -12,8 +12,8 @@ secrets_github_sums := "${TMPDIR}/plugin-secrets-github/SHA256SUMS"
 # vault does verification of actual plugin binary and registered SHA of the plugin
 .PHONY: update-secrets-github-plugin
 update-secrets-github-plugin:
-	@wget -q -O $(secrets_github_sig) https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SEC_GITHUB_PLUGIN_VERSION}/SHA256SUMS.sig
-	@wget -q -O $(secrets_github_sums) https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SEC_GITHUB_PLUGIN_VERSION}/SHA256SUMS
+	@curl -sSL -o $(secrets_github_sig) https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SEC_GITHUB_PLUGIN_VERSION}/SHA256SUMS.sig
+	@curl -sSL -o $(secrets_github_sums) https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/v${SEC_GITHUB_PLUGIN_VERSION}/SHA256SUMS
 	@curl -sS https://github.com/martinbaillie.gpg | gpg --import -
 	@gpg --verify $(secrets_github_sig) $(secrets_github_sums)
 	@sd '^ENV SEC_GITHUB_PLUGIN_VERSION=.*' 'ENV SEC_GITHUB_PLUGIN_VERSION="$(SEC_GITHUB_PLUGIN_VERSION)"' vault-toolkit/Dockerfile

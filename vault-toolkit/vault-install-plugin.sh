@@ -29,6 +29,7 @@ done
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
 echo "sha256sum: $(sha256sum /vault/plugins/vault-plugin-secrets-github)"
+sleep 2 # to avoid error while validating the command path: lstat /vault/plugins/vault-plugin-secrets-github: no such file or directory
 
 # SEC_GITHUB_PLUGIN_VERSION and SEC_GITHUB_PLUGIN_SHA env value are set in image at build time
 echo "registering secret github plugin version: ${SEC_GITHUB_PLUGIN_VERSION} sha256: ${SEC_GITHUB_PLUGIN_SHA}"

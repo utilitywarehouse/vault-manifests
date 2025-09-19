@@ -16,12 +16,12 @@ until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e
   sleep 3
 done
 
-until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == false' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/init" | jq -e '.initialized == true' >/dev/null 2>&1; do
   echo "vault is not initialized, going to sleep";
   sleep 3
 done
 
-until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == true' >/dev/null 2>&1; then
+until curl -Ss -f --cacert "${VAULT_CACERT}" "${local_addr}/v1/sys/seal-status" | jq -e '.sealed == false' >/dev/null 2>&1; do
   echo "sealed vault detected, going to sleep";
   sleep 3
 done
@@ -29,6 +29,7 @@ done
 # move plugin binary to plugin directory 
 mv /usr/local/bin/vault-plugin-secrets-github /vault/plugins/vault-plugin-secrets-github
 echo "sha256sum: $(sha256sum /vault/plugins/vault-plugin-secrets-github)"
+sleep 2 # to avoid error while validating the command path: lstat /vault/plugins/vault-plugin-secrets-github: no such file or directory
 
 # SEC_GITHUB_PLUGIN_VERSION and SEC_GITHUB_PLUGIN_SHA env value are set in image at build time
 echo "registering secret github plugin version: ${SEC_GITHUB_PLUGIN_VERSION} sha256: ${SEC_GITHUB_PLUGIN_SHA}"

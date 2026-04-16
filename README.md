@@ -107,11 +107,6 @@ To mitigate these issues metrics are exported by
 mappings](base/vault-namespace/resources/statsd-mappings.yaml) to create sane
 metrics names and labels.
 
-Each Vault replica also runs an instance of
-[`vault-exporter`](https://github.com/giantswarm/vault-exporter) which exports
-information about the state of the replica (i.e leadership status, whether Vault
-is sealed or not).
-
 ## Usage
 
 Reference the bases in your `kustomization.yaml`:
